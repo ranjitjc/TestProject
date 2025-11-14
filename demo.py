@@ -148,8 +148,8 @@ def main():
                        help='Path to trained model (default: ./models/dqn_final.pth)')
     parser.add_argument('--maze-size', type=int, default=10,
                        help='Size of the maze (default: 10)')
-    parser.add_argument('--render-size', type=int, default=400,
-                       help='Size of rendered images for display (default: 400)')
+    parser.add_argument('--render-size', type=int, default=84,
+                       help='Size of rendered images - must match training size (default: 84)')
     parser.add_argument('--episodes', type=int, default=5,
                        help='Number of episodes to run (default: 5)')
     parser.add_argument('--delay', type=int, default=200,

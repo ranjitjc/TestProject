@@ -115,9 +115,11 @@ python main.py demo --help
 **Demo Options:**
 - `--model`: Path to trained model (default: ./models/dqn_final.pth)
 - `--maze-size`: Size of the maze (default: 10)
-- `--render-size`: Size of rendered images (default: 400)
+- `--render-size`: Size of rendered images (default: 84) - **IMPORTANT**: Must match the render_size used during training
 - `--episodes`: Number of episodes to run (default: 5)
 - `--delay`: Delay between steps in ms (default: 200)
+
+**Important Note**: The `--render-size` parameter must match the size used during training (default: 84) because the neural network architecture depends on the input image dimensions. Using a different size will cause model loading errors.
 
 **Demo Controls:**
 - Press `q` to quit
@@ -235,6 +237,11 @@ target_update_freq = 500    # Target network update frequency
 - Ensure model exists: `ls models/`
 - Train a model first: `python main.py train`
 - Check model path: `--model ./models/dqn_final.pth`
+
+**Model loading error (size mismatch):**
+- Ensure `--render-size` matches the training render size (default: 84)
+- The neural network architecture depends on input image dimensions
+- If you trained with custom render_size, use the same value for demo
 
 ## Technical Details
 
