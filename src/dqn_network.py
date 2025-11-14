@@ -76,7 +76,7 @@ class DQNNetwork(nn.Module):
         x = self._forward_conv(x)
 
         # Flatten
-        x = x.view(x.size(0), -1)
+        x = x.reshape(x.size(0), -1)
 
         # Fully connected layers
         x = F.relu(self.fc1(x))
@@ -156,7 +156,7 @@ class DuelingDQNNetwork(nn.Module):
         x = self._forward_conv(x)
 
         # Flatten
-        x = x.view(x.size(0), -1)
+        x = x.reshape(x.size(0), -1)
 
         # Value stream
         value = F.relu(self.value_fc1(x))
