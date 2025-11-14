@@ -219,11 +219,19 @@ class MazeEnvironment:
         img = self._get_observation()
 
         if mode == 'human':
-            cv2.imshow('Maze Environment', img)
-            cv2.waitKey(1)
+            try:
+                cv2.imshow('Maze Environment', img)
+                cv2.waitKey(1)
+            except cv2.error:
+                # Headless mode - cv2.imshow not available
+                pass
 
         return img
 
     def close(self):
         """Clean up resources."""
-        cv2.destroyAllWindows()
+        try:
+            cv2.destroyAllWindows()
+        except (cv2.error, AttributeError):
+            # Headless mode - cv2.destroyAllWindows not available
+            pass

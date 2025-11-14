@@ -84,17 +84,23 @@ def demo_agent(model_path: str, maze_size: int = 10, render_size: int = 84,
             display_img = np.vstack([img, info_img])
 
             # Show image
-            cv2.imshow('Trained Agent Demo', display_img)
-            key = cv2.waitKey(delay)
+            try:
+                cv2.imshow('Trained Agent Demo', display_img)
+                key = cv2.waitKey(delay)
 
-            # Handle key presses
-            if key == ord('q'):
-                print("\nQuitting demo...")
-                env.close()
-                return
-            elif key == ord('n'):
-                print("Skipping to next episode...")
-                break
+                # Handle key presses
+                if key == ord('q'):
+                    print("\nQuitting demo...")
+                    env.close()
+                    return
+                elif key == ord('n'):
+                    print("Skipping to next episode...")
+                    break
+            except (cv2.error, AttributeError):
+                # Headless mode - cv2.imshow not available
+                # Continue without visualization
+                import time
+                time.sleep(delay / 1000.0)
 
             # Select action (no exploration)
             action = agent.select_action(state, training=False)

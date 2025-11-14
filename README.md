@@ -41,8 +41,10 @@ A complete implementation of a Deep Q-Network (DQN) agent that learns to navigat
 - Python 3.8+
 - PyTorch 2.0+
 - NumPy
-- OpenCV
+- OpenCV (headless version for compatibility)
 - Matplotlib
+
+**Note**: This project uses `opencv-python-headless` for compatibility with headless environments (containers, codespaces, servers). Visual rendering in demo mode may not work in headless environments, but training works perfectly.
 
 ### Setup
 
