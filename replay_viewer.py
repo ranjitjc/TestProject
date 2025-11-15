@@ -18,10 +18,14 @@ def main():
                        help='Delay between frames in ms (default: 100)')
     parser.add_argument('--export-video', type=str, default=None,
                        help='Export episode as video file')
+    parser.add_argument('--export-images', type=str, default=None,
+                       help='Export episode frames as images to directory')
     parser.add_argument('--fps', type=int, default=10,
                        help='Video FPS (default: 10)')
     parser.add_argument('--summary', action='store_true',
                        help='Show episode summary only')
+    parser.add_argument('--headless', action='store_true',
+                       help='Run in headless mode (no display)')
 
     args = parser.parse_args()
 
@@ -58,7 +62,49 @@ def main():
         print("Done!")
         return 0
 
-    # Play episode
+    # Export images
+    if args.export_images:
+        print(f"Exporting frames to {args.export_images}...")
+        replayer.export_frames_as_images(args.export_images)
+        print("Done!")
+        return 0
+
+    # Detect headless environment
+    import os
+    is_headless = (
+        args.headless or
+        os.environ.get('DISPLAY') is None or
+        os.environ.get('TERM') == 'dumb'
+    )
+
+    if is_headless:
+        print("\n⚠️  Headless environment detected!")
+        print("Visual playback is not available in this environment.")
+        print("\nAvailable options:")
+        print("  1. View summary:")
+        print(f"     python replay_viewer.py {args.episode_file} --summary")
+        print("  2. Export as video:")
+        print(f"     python replay_viewer.py {args.episode_file} --export-video episode.mp4")
+        print("  3. Export as images:")
+        print(f"     python replay_viewer.py {args.episode_file} --export-images frames/")
+        print("\nShowing summary instead...\n")
+
+        # Show summary in headless mode
+        summary = replayer.get_summary()
+        print("=" * 60)
+        print("  EPISODE SUMMARY")
+        print("=" * 60)
+        print(f"Total Frames: {summary['num_frames']}")
+        print(f"Total Reward: {summary['total_reward']:.2f}")
+        print(f"Average Reward: {summary['average_reward']:.2f}")
+        print(f"Max Reward: {summary['max_reward']:.2f}")
+        print(f"Min Reward: {summary['min_reward']:.2f}")
+        print("\nMetadata:")
+        for key, value in summary['metadata'].items():
+            print(f"  {key}: {value}")
+        return 0
+
+    # Play episode (only in non-headless environments)
     replayer.play(delay=args.delay)
 
     return 0

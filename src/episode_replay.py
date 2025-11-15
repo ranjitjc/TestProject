@@ -267,6 +267,29 @@ class EpisodeReplayer:
         out.release()
         print(f"Video exported to {filepath}")
 
+    def export_frames_as_images(self, output_dir: str, prefix: str = "frame"):
+        """
+        Export all frames as individual images.
+
+        Args:
+            output_dir: Directory to save images
+            prefix: Prefix for image filenames
+        """
+        import os
+        os.makedirs(output_dir, exist_ok=True)
+
+        print(f"Exporting {len(self.episode.frames)} frames to {output_dir}...")
+
+        for frame_idx in range(len(self.episode.frames)):
+            annotated = self.get_annotated_frame(frame_idx)
+            filename = f"{prefix}_{frame_idx:04d}.png"
+            filepath = os.path.join(output_dir, filename)
+            cv2.imwrite(filepath, annotated)
+
+        print(f"  ✓ Exported {len(self.episode.frames)} frames")
+        print(f"  First frame: {output_dir}/{prefix}_0000.png")
+        print(f"  Last frame: {output_dir}/{prefix}_{len(self.episode.frames)-1:04d}.png")
+
     def get_summary(self) -> Dict[str, Any]:
         """
         Get episode summary.
