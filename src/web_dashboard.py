@@ -198,7 +198,7 @@ class TrainingDashboard:
             # Display plots
             st.plotly_chart(
                 self.create_metrics_plot(df),
-                use_container_width=True
+                width='stretch'
             )
 
             # Statistics table
@@ -212,11 +212,11 @@ class TrainingDashboard:
                     'Metric': ['Total Episodes', 'Average Reward', 'Best Reward',
                               'Average Length', 'Min Length'],
                     'Value': [
-                        len(df),
+                        str(len(df)),
                         f"{df['reward'].mean():.2f}",
                         f"{df['reward'].max():.2f}",
                         f"{df['length'].mean():.1f}",
-                        f"{df['length'].min()}"
+                        str(int(df['length'].min()))
                     ]
                 })
                 st.dataframe(stats_df, hide_index=True)
@@ -238,7 +238,7 @@ class TrainingDashboard:
             st.subheader("📜 Recent Episodes")
             recent_episodes = df.tail(10)[['episode', 'reward', 'length']].copy()
             recent_episodes = recent_episodes.sort_values('episode', ascending=False)
-            st.dataframe(recent_episodes, hide_index=True, use_container_width=True)
+            st.dataframe(recent_episodes, hide_index=True, width='stretch')
 
         else:
             st.info("No training data available yet. Start training to see metrics!")
