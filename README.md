@@ -12,6 +12,35 @@ A complete implementation of a Deep Q-Network (DQN) agent that learns to navigat
 - **Training Visualization**: Real-time metrics and performance plots
 - **Demo Mode**: Visualize trained agents solving mazes
 
+### 🎨 Advanced Visualization Features (New!)
+
+- **Live Training Dashboard**: Real-time plots updating during training
+  - Episode rewards with smoothing
+  - Episode length tracking
+  - Training loss monitoring
+  - Epsilon decay visualization
+  - Success rate tracking
+  - Cumulative statistics
+
+- **Heatmap Visualization**: Track agent exploration patterns
+  - Visualize most-visited maze positions
+  - Episode path tracking
+  - Coverage analysis
+  - Compare exploration across episodes
+
+- **Episode Replay System**: Record and replay agent episodes
+  - Save episodes for later analysis
+  - Frame-by-frame playback with annotations
+  - Export episodes as video files
+  - Compare performance across training stages
+
+- **Web-based Dashboard**: Interactive monitoring with Streamlit
+  - Real-time metrics streaming
+  - Interactive plots with Plotly
+  - Model management interface
+  - Auto-refresh capability
+  - Training statistics overview
+
 ## Architecture
 
 ### Environment
@@ -43,8 +72,11 @@ A complete implementation of a Deep Q-Network (DQN) agent that learns to navigat
 - NumPy
 - OpenCV (headless version for compatibility)
 - Matplotlib
+- **Streamlit** (for web dashboard)
+- **Plotly** (for interactive plots)
+- **Pandas** (for data management)
 
-**Note**: This project uses `opencv-python-headless` for compatibility with headless environments (containers, codespaces, servers). Visual rendering in demo mode may not work in headless environments, but training works perfectly.
+**Note**: This project uses `opencv-python-headless` for compatibility with headless environments (containers, codespaces, servers). Visual rendering in demo mode may not work in headless environments, but training works perfectly. The web dashboard works great in all environments!
 
 ### Setup
 
@@ -141,21 +173,76 @@ python src/train.py --maze-size 12 --episodes 1500
 python demo.py --model ./models/dqn_final.pth --episodes 10
 ```
 
+### 🎨 Visualization Features
+
+#### Web Dashboard (Recommended)
+
+Launch the interactive web dashboard for real-time monitoring:
+
+```bash
+# Start the dashboard
+python run_dashboard.py
+
+# Then open your browser to: http://localhost:8501
+```
+
+**Features:**
+- Real-time training metrics
+- Interactive Plotly charts
+- Auto-refresh capability
+- Model management
+- Training statistics
+
+#### Episode Replay
+
+View recorded episodes with frame-by-frame playback:
+
+```bash
+# View a saved episode
+python replay_viewer.py outputs/episode_100.pkl
+
+# Show episode summary only
+python replay_viewer.py outputs/episode_100.pkl --summary
+
+# Export episode as video
+python replay_viewer.py outputs/episode_100.pkl --export-video episode_100.mp4 --fps 15
+```
+
+**Replay Controls:**
+- `q` - Quit
+- `p` - Pause/Resume
+- `n` - Next frame
+- `b` - Previous frame
+
+#### Heatmap Visualization
+
+Heatmaps are automatically generated during training and saved to `outputs/`. They show:
+- Most frequently visited positions
+- Agent exploration patterns
+- Coverage statistics
+- Episode paths
+
 ## Project Structure
 
 ```
 TestProject/
-├── main.py                 # Main entry point
-├── demo.py                 # Demo script
-├── requirements.txt        # Python dependencies
+├── main.py                    # Main entry point
+├── demo.py                    # Demo script
+├── run_dashboard.py           # Launch web dashboard
+├── replay_viewer.py           # Episode replay viewer
+├── requirements.txt           # Python dependencies
 ├── src/
 │   ├── __init__.py
-│   ├── maze_environment.py # Maze environment implementation
-│   ├── dqn_network.py      # Neural network architectures
-│   ├── dqn_agent.py        # DQN agent with replay buffer
-│   └── train.py            # Training script
-├── models/                 # Saved model checkpoints
-├── outputs/                # Training plots and metrics
+│   ├── maze_environment.py    # Maze environment
+│   ├── dqn_network.py         # Neural network architectures
+│   ├── dqn_agent.py           # DQN agent with replay buffer
+│   ├── train.py               # Training script
+│   ├── live_visualization.py  # Real-time training plots
+│   ├── heatmap_visualizer.py  # Exploration heatmaps
+│   ├── episode_replay.py      # Episode recording & replay
+│   └── web_dashboard.py       # Streamlit dashboard
+├── models/                    # Saved model checkpoints
+├── outputs/                   # Training plots, metrics, replays
 └── README.md
 ```
 
