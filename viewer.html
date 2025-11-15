@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Episode Frame Viewer</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f0f0f0;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .controls {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .controls button {
+            padding: 10px 20px;
+            margin: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            border: none;
+            border-radius: 4px;
+            background: #007bff;
+            color: white;
+        }
+        .controls button:hover {
+            background: #0056b3;
+        }
+        .controls input[type="range"] {
+            width: 300px;
+            margin: 0 10px;
+        }
+        .frame-display {
+            text-align: center;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        #frameImage {
+            max-width: 100%;
+            border: 2px solid #ddd;
+            border-radius: 4px;
+        }
+        .info {
+            margin-top: 15px;
+            font-size: 18px;
+            color: #555;
+        }
+        .thumbnail-strip {
+            display: flex;
+            overflow-x: auto;
+            gap: 10px;
+            padding: 10px;
+            background: white;
+            margin-top: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .thumbnail {
+            min-width: 150px;
+            cursor: pointer;
+            border: 2px solid transparent;
+            border-radius: 4px;
+        }
+        .thumbnail:hover {
+            border-color: #007bff;
+        }
+        .thumbnail.active {
+            border-color: #28a745;
+        }
+    </style>
+</head>
+<body>
+    <h1>🎮 Episode Frame Viewer</h1>
+
+    <div class="controls">
+        <button onclick="firstFrame()">⏮️ First</button>
+        <button onclick="prevFrame()">⏪ Previous</button>
+        <button onclick="togglePlay()">▶️ Play</button>
+        <button onclick="nextFrame()">⏩ Next</button>
+        <button onclick="lastFrame()">⏭️ Last</button>
+        <br><br>
+        <input type="range" id="frameSlider" min="0" max="287" value="0" oninput="gotoFrame(this.value)">
+        <br>
+        <label>Speed: </label>
+        <input type="range" id="speedSlider" min="1" max="20" value="10" oninput="updateSpeed(this.value)">
+        <span id="speedValue">10 FPS</span>
+    </div>
+
+    <div class="frame-display">
+        <img id="frameImage" src="frames/frame_0000.png" alt="Frame">
+        <div class="info">
+            <strong>Frame: <span id="frameNumber">0</span> / 287</strong>
+        </div>
+    </div>
+
+    <div class="thumbnail-strip" id="thumbnails">
+        <!-- Thumbnails will be generated here -->
+    </div>
+
+    <script>
+        let currentFrame = 0;
+        const totalFrames = 288;
+        let isPlaying = false;
+        let playInterval = null;
+        let fps = 10;
+
+        // Initialize
+        function init() {
+            // Generate thumbnails (every 20th frame)
+            const thumbContainer = document.getElementById('thumbnails');
+            for (let i = 0; i < totalFrames; i += 20) {
+                const thumb = document.createElement('img');
+                thumb.src = `frames/frame_${String(i).padStart(4, '0')}.png`;
+                thumb.className = 'thumbnail';
+                thumb.onclick = () => gotoFrame(i);
+                thumb.title = `Frame ${i}`;
+                thumbContainer.appendChild(thumb);
+            }
+        }
+
+        function updateFrame() {
+            const frameNum = String(currentFrame).padStart(4, '0');
+            document.getElementById('frameImage').src = `frames/frame_${frameNum}.png`;
+            document.getElementById('frameNumber').textContent = currentFrame;
+            document.getElementById('frameSlider').value = currentFrame;
+
+            // Update thumbnail highlighting
+            const thumbnails = document.querySelectorAll('.thumbnail');
+            thumbnails.forEach((thumb, idx) => {
+                thumb.classList.toggle('active', idx * 20 === currentFrame);
+            });
+        }
+
+        function nextFrame() {
+            currentFrame = Math.min(currentFrame + 1, totalFrames - 1);
+            updateFrame();
+        }
+
+        function prevFrame() {
+            currentFrame = Math.max(currentFrame - 1, 0);
+            updateFrame();
+        }
+
+        function firstFrame() {
+            currentFrame = 0;
+            updateFrame();
+        }
+
+        function lastFrame() {
+            currentFrame = totalFrames - 1;
+            updateFrame();
+        }
+
+        function gotoFrame(frame) {
+            currentFrame = parseInt(frame);
+            updateFrame();
+        }
+
+        function togglePlay() {
+            isPlaying = !isPlaying;
+            const playBtn = event.target;
+
+            if (isPlaying) {
+                playBtn.textContent = '⏸️ Pause';
+                playInterval = setInterval(() => {
+                    if (currentFrame >= totalFrames - 1) {
+                        currentFrame = 0;
+                    } else {
+                        nextFrame();
+                    }
+                }, 1000 / fps);
+            } else {
+                playBtn.textContent = '▶️ Play';
+                clearInterval(playInterval);
+            }
+        }
+
+        function updateSpeed(value) {
+            fps = parseInt(value);
+            document.getElementById('speedValue').textContent = `${fps} FPS`;
+
+            // Restart playback with new speed if playing
+            if (isPlaying) {
+                clearInterval(playInterval);
+                playInterval = setInterval(() => {
+                    if (currentFrame >= totalFrames - 1) {
+                        currentFrame = 0;
+                    } else {
+                        nextFrame();
+                    }
+                }, 1000 / fps);
+            }
+        }
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            switch(e.key) {
+                case 'ArrowRight': nextFrame(); break;
+                case 'ArrowLeft': prevFrame(); break;
+                case ' ': togglePlay(); e.preventDefault(); break;
+                case 'Home': firstFrame(); break;
+                case 'End': lastFrame(); break;
+            }
+        });
+
+        // Initialize on load
+        init();
+    </script>
+</body>
+</html>

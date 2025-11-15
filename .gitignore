@@ -36,6 +36,9 @@ env/
 models/*.pth
 outputs/*.png
 outputs/*.jpg
+outputs/*.pkl
+outputs/*.json
+frames/
 *.log
 
 # Keep directory structure
