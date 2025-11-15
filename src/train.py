@@ -5,6 +5,7 @@ Training script for DQN agent on maze environment
 import os
 import sys
 import time
+import json
 import numpy as np
 import matplotlib.pyplot as plt
 from tqdm import tqdm
@@ -208,6 +209,10 @@ class Trainer:
                     success=success
                 )
 
+            # Export training log for dashboard (every 10 episodes)
+            if (episode + 1) % 10 == 0 or episode == self.num_episodes - 1:
+                self._export_training_log()
+
             # Print progress
             if (episode + 1) % 50 == 0:
                 avg_reward = np.mean(self.episode_rewards[-50:])
@@ -230,6 +235,13 @@ class Trainer:
 
         # Save visualizations
         print("\nSaving visualizations...")
+
+        # Export final training log
+        try:
+            self._export_training_log()
+            print(f"  ✓ Training log exported to outputs/training_log.json")
+        except Exception as e:
+            print(f"  ✗ Training log export failed: {e}")
 
         # Save heatmap
         try:
@@ -268,6 +280,38 @@ class Trainer:
         """Save the model."""
         filepath = os.path.join(self.model_dir, filename)
         self.agent.save(filepath)
+
+    def _export_training_log(self):
+        """Export training metrics as JSON for the web dashboard."""
+        # Prepare data for export
+        training_data = []
+
+        # Calculate success rate for each episode
+        for i in range(len(self.episode_rewards)):
+            # Calculate rolling success rate
+            episode_success = 1 if self.episode_rewards[i] > 50 else 0
+
+            # Calculate success rate over last 100 episodes
+            start_idx = max(0, i - 99)
+            recent_rewards = self.episode_rewards[start_idx:i+1]
+            recent_successes = [1 if r > 50 else 0 for r in recent_rewards]
+            success_rate = np.mean(recent_successes) * 100
+
+            # Get loss if available
+            loss = self.losses[i] if i < len(self.losses) else 0.0
+
+            training_data.append({
+                'episode': i,
+                'reward': float(self.episode_rewards[i]),
+                'length': int(self.episode_lengths[i]),
+                'loss': float(loss),
+                'success_rate': float(success_rate)
+            })
+
+        # Save to JSON file
+        log_path = os.path.join(self.output_dir, 'training_log.json')
+        with open(log_path, 'w') as f:
+            json.dump(training_data, f, indent=2)
 
     def plot_training_metrics(self):
         """Plot and save training metrics."""
