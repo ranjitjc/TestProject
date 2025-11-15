@@ -61,6 +61,10 @@ For more options, use:
                              help='Render the environment during training')
     train_parser.add_argument('--save-freq', type=int, default=100,
                              help='Frequency to save model (default: 100)')
+    train_parser.add_argument('--record-freq', type=int, default=50,
+                             help='Frequency to record episodes as .pkl (0=disable, default: 50)')
+    train_parser.add_argument('--live-viz', action='store_true',
+                             help='Enable live training visualization')
 
     # Demo command
     demo_parser = subparsers.add_parser('demo', help='Demo a trained agent')
@@ -84,7 +88,9 @@ For more options, use:
             maze_size=args.maze_size,
             render_size=args.render_size,
             num_episodes=args.episodes,
-            save_freq=args.save_freq
+            save_freq=args.save_freq,
+            record_freq=args.record_freq,
+            enable_live_viz=args.live_viz
         )
         trainer.train(render=args.render)
         trainer.plot_training_metrics()

@@ -16,6 +16,9 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 
 from src.maze_environment import MazeEnvironment
 from src.dqn_agent import DQNAgent
+from src.episode_replay import EpisodeRecorder
+from src.heatmap_visualizer import HeatmapVisualizer
+from src.live_visualization import LiveTrainingVisualizer
 
 
 class Trainer:
@@ -28,7 +31,9 @@ class Trainer:
         num_episodes: int = 1000,
         save_freq: int = 100,
         model_dir: str = './models',
-        output_dir: str = './outputs'
+        output_dir: str = './outputs',
+        record_freq: int = 50,
+        enable_live_viz: bool = False
     ):
         """
         Initialize the trainer.
@@ -40,6 +45,8 @@ class Trainer:
             save_freq: Frequency to save model checkpoints
             model_dir: Directory to save models
             output_dir: Directory to save outputs
+            record_freq: Frequency to record episodes (0 = disable)
+            enable_live_viz: Enable live training visualization
         """
         self.maze_size = maze_size
         self.render_size = render_size
@@ -47,6 +54,8 @@ class Trainer:
         self.save_freq = save_freq
         self.model_dir = model_dir
         self.output_dir = output_dir
+        self.record_freq = record_freq
+        self.enable_live_viz = enable_live_viz
 
         # Create directories
         os.makedirs(model_dir, exist_ok=True)
@@ -77,6 +86,14 @@ class Trainer:
         self.losses = []
         self.success_rate = []
 
+        # Visualization tools
+        self.heatmap_viz = HeatmapVisualizer(maze_size=maze_size)
+        self.live_viz = LiveTrainingVisualizer(window_size=100, update_interval=10) if enable_live_viz else None
+
+        # Track best episode for recording
+        self.best_reward = float('-inf')
+        self.best_episode_data = None
+
     def train(self, render: bool = False):
         """
         Train the agent.
@@ -87,9 +104,12 @@ class Trainer:
         print(f"Training DQN agent on {self.maze_size}x{self.maze_size} maze")
         print(f"Device: {self.agent.device}")
         print(f"Number of episodes: {self.num_episodes}")
+        print(f"Episode recording: Every {self.record_freq} episodes" if self.record_freq > 0 else "Episode recording: Disabled")
+        print(f"Live visualization: {'Enabled' if self.enable_live_viz else 'Disabled'}")
         print("-" * 50)
 
         recent_successes = []
+        episode_path = []  # Track agent path for current episode
 
         for episode in tqdm(range(self.num_episodes), desc="Training"):
             state = self.env.reset()
@@ -97,11 +117,31 @@ class Trainer:
             episode_loss = 0
             steps = 0
             done = False
+            episode_path = []
+
+            # Determine if we should record this episode
+            should_record = (
+                self.record_freq > 0 and (
+                    episode == 0 or  # First episode
+                    (episode + 1) % self.record_freq == 0 or  # Every N episodes
+                    episode == self.num_episodes - 1  # Last episode
+                )
+            )
+
+            if should_record:
+                recorder = EpisodeRecorder()
 
             while not done:
+                # Record agent position for heatmap
+                episode_path.append(tuple(self.env.agent_pos))
+
                 # Select and perform action
                 action = self.agent.select_action(state, training=True)
                 next_state, reward, done, info = self.env.step(action)
+
+                # Record step if recording this episode
+                if should_record:
+                    recorder.record_step(state, action, reward, info)
 
                 # Store transition
                 self.agent.store_transition(state, action, reward, next_state, done)
@@ -137,6 +177,37 @@ class Trainer:
 
             success_rate = np.mean(recent_successes) * 100
 
+            # Update heatmap with episode path
+            self.heatmap_viz.record_path(episode_path)
+
+            # Save episode recording if needed
+            if should_record:
+                recorder.finalize(
+                    success=success,
+                    total_steps=steps,
+                    total_reward=episode_reward,
+                    episode_num=episode
+                )
+                recorder.save(f'{self.output_dir}/episode_{episode}.pkl')
+
+            # Track best episode for later saving
+            if episode_reward > self.best_reward:
+                self.best_reward = episode_reward
+                # Store best episode data
+                if should_record:
+                    self.best_episode_data = (episode, recorder)
+
+            # Update live visualization
+            if self.live_viz:
+                self.live_viz.update(
+                    episode=episode,
+                    reward=episode_reward,
+                    length=steps,
+                    loss=episode_loss / steps if episode_loss > 0 else 0,
+                    epsilon=self.agent.epsilon,
+                    success=success
+                )
+
             # Print progress
             if (episode + 1) % 50 == 0:
                 avg_reward = np.mean(self.episode_rewards[-50:])
@@ -156,6 +227,37 @@ class Trainer:
 
         # Save final model
         self.save_model("dqn_final.pth")
+
+        # Save visualizations
+        print("\nSaving visualizations...")
+
+        # Save heatmap
+        try:
+            self.heatmap_viz.save_heatmap(
+                f'{self.output_dir}/exploration_heatmap.png',
+                maze=self.env.maze,
+                start_pos=self.env.start_pos,
+                goal_pos=self.env.goal_pos
+            )
+            print(f"  ✓ Exploration heatmap saved")
+        except Exception as e:
+            print(f"  ✗ Heatmap save failed: {e}")
+
+        # Save live visualization if enabled
+        if self.live_viz:
+            try:
+                self.live_viz.save(f'{self.output_dir}/live_training_viz.png')
+                self.live_viz.close()
+                print(f"  ✓ Live visualization saved")
+            except Exception as e:
+                print(f"  ✗ Live visualization save failed: {e}")
+
+        # Print heatmap statistics
+        stats = self.heatmap_viz.get_statistics()
+        print(f"\nExploration Statistics:")
+        print(f"  Total visits: {stats['total_visits']}")
+        print(f"  Unique cells: {stats['unique_cells_visited']}")
+        print(f"  Coverage: {stats['coverage']:.1f}%")
 
         # Close environment
         self.env.close()
