@@ -106,9 +106,22 @@ class LiveTrainingVisualizer:
         self.epsilons.append(epsilon)
 
         # Calculate rolling success rate
-        recent_successes = [1 if s else 0 for s in
-                          [success] + ([self.success_rates[-1] > 0] * min(len(self.success_rates), 99))]
-        success_rate = np.mean(recent_successes) * 100
+        # Build list of recent successes (current + previous episodes)
+        current_success = 1 if success else 0
+
+        # Get previous successes from success_rates (convert back from percentage)
+        if len(self.success_rates) > 0:
+            # Estimate number of previous successes from last success rate
+            prev_count = min(len(self.success_rates), 99)
+            prev_success_rate = self.success_rates[-1] / 100.0
+            prev_successes = int(prev_success_rate * prev_count)
+            total_successes = current_success + prev_successes
+            total_episodes = prev_count + 1
+            success_rate = (total_successes / total_episodes) * 100
+        else:
+            # First episode
+            success_rate = current_success * 100.0
+
         self.success_rates.append(success_rate)
 
         self.episode_count += 1
