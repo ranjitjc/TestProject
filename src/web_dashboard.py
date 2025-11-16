@@ -224,7 +224,7 @@ class TrainingDashboard:
                 st.write("**Training Progress**")
                 live_viz_path = self.log_dir / 'live_training_viz.png'
                 if live_viz_path.exists():
-                    st.image(str(live_viz_path), use_container_width=True,
+                    st.image(str(live_viz_path), width='stretch',
                             caption="Live Training Metrics (updates every 10 episodes)")
                 else:
                     st.info("Live visualization will appear here when --live-viz is enabled")
@@ -233,7 +233,7 @@ class TrainingDashboard:
                 st.write("**Current Training Frame**")
                 render_path = self.log_dir / 'render_current.png'
                 if render_path.exists():
-                    st.image(str(render_path), use_container_width=True,
+                    st.image(str(render_path), width='stretch',
                             caption="Current maze state (updates during training with --render)")
                 else:
                     st.info("Render frame will appear here when --render is enabled")
@@ -290,7 +290,7 @@ class TrainingDashboard:
                 st.write("**Training Progress**")
                 live_viz_path = self.log_dir / 'live_training_viz.png'
                 if live_viz_path.exists():
-                    st.image(str(live_viz_path), use_container_width=True,
+                    st.image(str(live_viz_path), width='stretch',
                             caption="Live Training Metrics (updates every 10 episodes)")
                 else:
                     st.info("Live visualization will appear here when training with --live-viz")
@@ -299,7 +299,7 @@ class TrainingDashboard:
                 st.write("**Current Training Frame**")
                 render_path = self.log_dir / 'render_current.png'
                 if render_path.exists():
-                    st.image(str(render_path), use_container_width=True,
+                    st.image(str(render_path), width='stretch',
                             caption="Current maze state (updates during training with --render)")
                 else:
                     st.info("Render frame will appear here when training with --render")
