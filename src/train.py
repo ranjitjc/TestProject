@@ -89,7 +89,11 @@ class Trainer:
 
         # Visualization tools
         self.heatmap_viz = HeatmapVisualizer(maze_size=maze_size)
-        self.live_viz = LiveTrainingVisualizer(window_size=100, update_interval=10) if enable_live_viz else None
+        self.live_viz = LiveTrainingVisualizer(
+            window_size=100,
+            update_interval=10,
+            output_dir=self.output_dir
+        ) if enable_live_viz else None
 
         # Track best episode for recording
         self.best_reward = float('-inf')

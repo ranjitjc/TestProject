@@ -156,7 +156,7 @@ class EpisodeReplayer:
 
         # Create larger frame for annotations
         h, w = frame.shape[:2]
-        annotated = np.ones((h + 100, w, 3), dtype=np.uint8) * 255
+        annotated = np.ones((h + 70, w, 3), dtype=np.uint8) * 255
 
         # Place original frame
         annotated[:h, :, :] = frame
@@ -168,20 +168,24 @@ class EpisodeReplayer:
 
         action_name = self.ACTION_NAMES.get(action, 'N/A')
 
-        # Text annotations
-        cv2.putText(annotated, f"Frame: {frame_idx + 1}/{len(self.episode.frames)}",
-                   (10, h + 25), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 0), 1)
-        cv2.putText(annotated, f"Action: {action_name}",
-                   (10, h + 50), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 1)
-        cv2.putText(annotated, f"Reward: {reward:.2f}",
-                   (10, h + 75), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 128, 0), 1)
-        cv2.putText(annotated, f"Total: {cumulative_reward:.2f}",
-                   (w//2, h + 25), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (128, 0, 128), 1)
+        # Text annotations with smaller font for small frames
+        font_scale = 0.35
+        thickness = 1
+        line_height = 15
+
+        cv2.putText(annotated, f"F:{frame_idx + 1}/{len(self.episode.frames)}",
+                   (5, h + line_height), cv2.FONT_HERSHEY_SIMPLEX, font_scale, (0, 0, 0), thickness)
+        cv2.putText(annotated, f"A:{action_name}",
+                   (5, h + line_height*2), cv2.FONT_HERSHEY_SIMPLEX, font_scale, (0, 0, 255), thickness)
+        cv2.putText(annotated, f"R:{reward:.1f}",
+                   (5, h + line_height*3), cv2.FONT_HERSHEY_SIMPLEX, font_scale, (0, 128, 0), thickness)
+        cv2.putText(annotated, f"Tot:{cumulative_reward:.1f}",
+                   (5, h + line_height*4), cv2.FONT_HERSHEY_SIMPLEX, font_scale, (128, 0, 128), thickness)
 
         # Success indicator
         if self.episode.metadata.get('success', False):
-            cv2.putText(annotated, "SUCCESS",
-                       (w//2, h + 50), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
+            cv2.putText(annotated, "WIN",
+                       (w-30, h + line_height*2), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (0, 200, 0), thickness)
 
         return annotated
 
