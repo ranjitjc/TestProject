@@ -115,7 +115,7 @@ class Trainer:
         # Detect headless environment
         import os
         self.is_headless = os.environ.get('DISPLAY') is None
-        if self.is_headless and render:
+        if self.is_headless and (render or self.enable_live_viz):
             print(f"Headless mode: Rendering will save to {self.output_dir}/render_current.png")
         print("-" * 50)
 
@@ -166,8 +166,8 @@ class Trainer:
                 episode_reward += reward
                 steps += 1
 
-                # Render if requested
-                if render:
+                # Render if requested or if live visualization is enabled
+                if render or self.enable_live_viz:
                     if self.is_headless:
                         # Save to file in headless mode (every 5 steps to avoid too many files)
                         if steps % 5 == 0:
@@ -175,7 +175,8 @@ class Trainer:
                             self.env.render('human', save_path=save_path)
                     else:
                         self.env.render('human')
-                        time.sleep(0.01)
+                        if not render:  # Only sleep if render flag is explicitly set
+                            time.sleep(0.01)
 
             # Update epsilon
             self.agent.update_epsilon()
