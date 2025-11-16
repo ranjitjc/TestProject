@@ -12,6 +12,44 @@ A complete implementation of a Deep Q-Network (DQN) agent that learns to navigat
 - **Training Visualization**: Real-time metrics and performance plots
 - **Demo Mode**: Visualize trained agents solving mazes
 
+### 🎨 Advanced Visualization Features (New!)
+
+- **Multi-Page Web Dashboard**: Comprehensive monitoring interface with three specialized pages
+  - **Training Dashboard**: Real-time training metrics and performance
+    - Episode rewards with smoothing
+    - Episode length tracking
+    - Training loss monitoring
+    - Success rate tracking
+    - Live visualization updates
+    - Training statistics overview
+  - **Demo Dashboard**: Demo performance analysis and visualization
+    - Real-time demo frame visualization
+    - Performance summary charts (steps, rewards, success rate)
+    - Recorded episode management
+    - Demo command reference
+  - **Episode Viewer**: Interactive episode playback
+    - Frame-by-frame analysis
+    - Action and reward annotations
+    - Interactive HTML viewer embedding
+
+- **Demo Visualization System**: Automatic performance tracking
+  - Real-time frame saving during demo execution
+  - Automatic summary generation with 4-panel charts
+  - Episode recording for detailed analysis
+  - Headless environment support
+
+- **Heatmap Visualization**: Track agent exploration patterns
+  - Visualize most-visited maze positions
+  - Episode path tracking
+  - Coverage analysis
+  - Compare exploration across episodes
+
+- **Episode Replay System**: Record and replay agent episodes
+  - Save episodes during training or demo
+  - Frame-by-frame playback with annotations
+  - Export episodes as video files
+  - Compare performance across training stages
+
 ## Architecture
 
 ### Environment
@@ -43,8 +81,11 @@ A complete implementation of a Deep Q-Network (DQN) agent that learns to navigat
 - NumPy
 - OpenCV (headless version for compatibility)
 - Matplotlib
+- **Streamlit** (for web dashboard)
+- **Plotly** (for interactive plots)
+- **Pandas** (for data management)
 
-**Note**: This project uses `opencv-python-headless` for compatibility with headless environments (containers, codespaces, servers). Visual rendering in demo mode may not work in headless environments, but training works perfectly.
+**Note**: This project uses `opencv-python-headless` for compatibility with headless environments (containers, codespaces, servers). Visual rendering in demo mode may not work in headless environments, but training works perfectly. The web dashboard works great in all environments!
 
 ### Setup
 
@@ -96,20 +137,23 @@ python main.py train --help
 
 ### Demo
 
-Visualize a trained agent solving mazes:
+Visualize a trained agent solving mazes with automatic performance tracking:
 
 ```bash
-# Demo with default model
-python main.py demo
+# Basic demo
+python demo.py --model ./models/dqn_final.pth
 
-# Demo with specific model
-python main.py demo --model ./models/dqn_checkpoint_ep500.pth
+# Demo with visualization and episode recording
+python demo.py --model ./models/dqn_final.pth --episodes 10 --record
 
-# Custom settings
-python main.py demo --episodes 10 --delay 100
+# Demo with custom output directory
+python demo.py --model ./models/dqn_final.pth --save-dir my_demo --record
+
+# Using main.py
+python main.py demo --model ./models/dqn_final.pth
 
 # All demo options
-python main.py demo --help
+python demo.py --help
 ```
 
 **Demo Options:**
@@ -118,8 +162,15 @@ python main.py demo --help
 - `--render-size`: Size of rendered images (default: 84) - **IMPORTANT**: Must match the render_size used during training
 - `--episodes`: Number of episodes to run (default: 5)
 - `--delay`: Delay between steps in ms (default: 200)
+- `--save-dir`: Directory to save demo outputs (default: demo_outputs)
+- `--record`: Record episodes as .pkl files for replay
 
 **Important Note**: The `--render-size` parameter must match the size used during training (default: 84) because the neural network architecture depends on the input image dimensions. Using a different size will cause model loading errors.
+
+**Demo Output Files:**
+- `demo_current.png`: Current frame during demo execution (updates in real-time)
+- `demo_summary.png`: 4-panel performance summary (steps, rewards, success rate, statistics)
+- `demo_episode_0.pkl`, `demo_episode_1.pkl`, etc.: Recorded episodes (when using --record)
 
 **Demo Controls:**
 - Press `q` to quit
@@ -141,21 +192,115 @@ python src/train.py --maze-size 12 --episodes 1500
 python demo.py --model ./models/dqn_final.pth --episodes 10
 ```
 
+### 🎨 Visualization Features
+
+#### Web Dashboard (Recommended)
+
+Launch the interactive multi-page web dashboard for comprehensive monitoring:
+
+```bash
+# Start the dashboard
+streamlit run src/web_dashboard.py
+
+# Or use the wrapper script
+python run_dashboard.py
+
+# Then open your browser to: http://localhost:8501
+```
+
+**Dashboard Pages:**
+
+1. **Training Dashboard**
+   - Real-time training metrics and plots
+   - Episode rewards, length, loss tracking
+   - Success rate monitoring
+   - Live visualization updates
+   - Training statistics overview
+   - Model selection and management
+
+2. **Demo Dashboard**
+   - Current demo frame visualization
+   - Performance summary charts
+   - Recorded episodes list
+   - Demo command reference
+   - Quick actions for running demos
+
+3. **Episode Viewer**
+   - Interactive HTML episode playback
+   - Frame-by-frame navigation
+   - Action and reward annotations
+   - Episode data visualization
+
+**Features:**
+- Multi-page navigation for organized access
+- Auto-refresh for Training Dashboard
+- Interactive Plotly charts
+- Page-specific controls and information
+- Clean, isolated content per page
+
+#### Episode Replay
+
+View recorded episodes with frame-by-frame playback:
+
+```bash
+# View a training episode
+python replay_viewer.py outputs/episode_100.pkl
+
+# View a demo episode
+python replay_viewer.py demo_outputs/demo_episode_0.pkl
+
+# Show episode summary only
+python replay_viewer.py demo_outputs/demo_episode_0.pkl --summary
+
+# Export episode as video
+python replay_viewer.py demo_outputs/demo_episode_0.pkl --export-video output/demo.mp4 --fps 15
+
+# Export frames to generate HTML viewer
+python replay_viewer.py demo_outputs/demo_episode_0.pkl --export-images frames/
+```
+
+**Replay Controls:**
+- `q` - Quit
+- `p` - Pause/Resume
+- `n` - Next frame
+- `b` - Previous frame
+
+**Note:** Exporting frames with `--export-images` generates a `viewer.html` file that can be viewed in the Episode Viewer page of the web dashboard.
+
+#### Heatmap Visualization
+
+Heatmaps are automatically generated during training and saved to `outputs/`. They show:
+- Most frequently visited positions
+- Agent exploration patterns
+- Coverage statistics
+- Episode paths
+
 ## Project Structure
 
 ```
 TestProject/
-├── main.py                 # Main entry point
-├── demo.py                 # Demo script
-├── requirements.txt        # Python dependencies
+├── main.py                    # Main entry point
+├── demo.py                    # Demo script with visualization
+├── run_dashboard.py           # Launch web dashboard
+├── replay_viewer.py           # Episode replay viewer
+├── requirements.txt           # Python dependencies
 ├── src/
 │   ├── __init__.py
-│   ├── maze_environment.py # Maze environment implementation
-│   ├── dqn_network.py      # Neural network architectures
-│   ├── dqn_agent.py        # DQN agent with replay buffer
-│   └── train.py            # Training script
-├── models/                 # Saved model checkpoints
-├── outputs/                # Training plots and metrics
+│   ├── maze_environment.py    # Maze environment
+│   ├── dqn_network.py         # Neural network architectures
+│   ├── dqn_agent.py           # DQN agent with replay buffer
+│   ├── train.py               # Training script
+│   ├── live_visualization.py  # Real-time training plots
+│   ├── heatmap_visualizer.py  # Exploration heatmaps
+│   ├── episode_replay.py      # Episode recording & replay
+│   └── web_dashboard.py       # Multi-page Streamlit dashboard
+├── models/                    # Saved model checkpoints
+├── outputs/                   # Training plots, metrics, replays
+├── demo_outputs/              # Demo visualizations and recordings
+│   ├── demo_current.png       # Current demo frame
+│   ├── demo_summary.png       # Performance summary
+│   └── demo_episode_*.pkl     # Recorded demo episodes
+├── viewer.html                # Generated episode viewer (optional)
 └── README.md
 ```
 

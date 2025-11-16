@@ -209,20 +209,26 @@ class MazeEnvironment:
 
         return img
 
-    def render(self, mode: str = 'human') -> Optional[np.ndarray]:
+    def render(self, mode: str = 'human', save_path: Optional[str] = None) -> Optional[np.ndarray]:
         """
         Render the environment.
 
         Args:
             mode: 'human' for display, 'rgb_array' for returning array
+            save_path: Optional path to save the rendered image
         """
         img = self._get_observation()
 
+        # Save to file if path provided
+        if save_path:
+            cv2.imwrite(save_path, img)
+
+        # Also try to display if in human mode
         if mode == 'human':
             try:
                 cv2.imshow('Maze Environment', img)
                 cv2.waitKey(1)
-            except cv2.error:
+            except (cv2.error, AttributeError):
                 # Headless mode - cv2.imshow not available
                 pass
 
