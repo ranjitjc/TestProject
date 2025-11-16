@@ -146,7 +146,7 @@ class TrainingDashboard:
             # Page selector
             page = st.radio(
                 "Select Page",
-                ["Training Dashboard", "Demo Dashboard"],
+                ["Training Dashboard", "Demo Dashboard", "Episode Viewer"],
                 key="page_selector"
             )
 
@@ -159,21 +159,6 @@ class TrainingDashboard:
 
             # Auto-refresh toggle
             auto_refresh = st.checkbox("Auto-refresh", value=True)
-
-            st.markdown("---")
-
-            # Episode viewer control
-            st.subheader("🎬 Episode Viewer")
-            viewer_path = Path("viewer.html")
-            if viewer_path.exists():
-                if st.button("📺 Open Episode Viewer", key="open_viewer"):
-                    st.session_state['show_viewer'] = True
-                if st.session_state.get('show_viewer', False):
-                    if st.button("✖️ Close Viewer", key="close_viewer"):
-                        st.session_state['show_viewer'] = False
-            else:
-                st.info("No episodes yet")
-                st.caption("Export frames to generate")
 
             st.markdown("---")
 
@@ -195,8 +180,10 @@ class TrainingDashboard:
         # Route to appropriate page
         if page == "Training Dashboard":
             self.render_training_dashboard()
-        else:
+        elif page == "Demo Dashboard":
             self.render_demo_dashboard()
+        else:
+            self.render_episode_viewer()
 
         # Auto-refresh
         if auto_refresh:
@@ -269,19 +256,6 @@ class TrainingDashboard:
                 else:
                     st.info("Render frame will appear here when --render is enabled")
 
-            # Episode viewer section - shows when button clicked in sidebar
-            if st.session_state.get('show_viewer', False):
-                viewer_path = Path("viewer.html")
-                if viewer_path.exists():
-                    st.markdown("---")
-                    st.subheader("🎬 Episode Viewer")
-                    # Read and embed the viewer
-                    with open(viewer_path, 'r') as f:
-                        viewer_html = f.read()
-                    st.components.v1.html(viewer_html, height=800, scrolling=True)
-                else:
-                    st.session_state['show_viewer'] = False  # Reset if file no longer exists
-
             # Statistics table
             st.subheader("📊 Training Statistics")
 
@@ -347,19 +321,6 @@ class TrainingDashboard:
                             caption="Current maze state (updates during training with --render)")
                 else:
                     st.info("Render frame will appear here when training with --render")
-
-            # Episode viewer section - shows when button clicked in sidebar
-            if st.session_state.get('show_viewer', False):
-                viewer_path = Path("viewer.html")
-                if viewer_path.exists():
-                    st.markdown("---")
-                    st.subheader("🎬 Episode Viewer")
-                    # Read and embed the viewer
-                    with open(viewer_path, 'r') as f:
-                        viewer_html = f.read()
-                    st.components.v1.html(viewer_html, height=800, scrolling=True)
-                else:
-                    st.session_state['show_viewer'] = False  # Reset if file no longer exists
 
     def render_demo_dashboard(self):
         """Render the demo/evaluation dashboard page."""
@@ -443,6 +404,50 @@ class TrainingDashboard:
 
             st.markdown("**View recorded episode:**")
             st.code("python replay_viewer.py demo_outputs/demo_episode_0.pkl --summary", language="bash")
+
+    def render_episode_viewer(self):
+        """Render the episode viewer page."""
+        st.title("🎬 Episode Viewer")
+        st.markdown("---")
+
+        viewer_path = Path("viewer.html")
+
+        if not viewer_path.exists():
+            st.info("No episode viewer available yet.")
+            st.markdown("**To generate an episode viewer:**")
+            st.markdown("1. Record episodes during training or demo")
+            st.code("python demo.py --episodes 10 --record", language="bash")
+            st.markdown("2. Export frames to create the viewer")
+            st.code("python replay_viewer.py demo_outputs/demo_episode_0.pkl --export-images frames/", language="bash")
+            st.caption("This will generate a viewer.html file for interactive playback")
+            return
+
+        # Display the episode viewer
+        st.subheader("🎥 Interactive Episode Playback")
+
+        # Read and embed the viewer
+        with open(viewer_path, 'r') as f:
+            viewer_html = f.read()
+
+        st.components.v1.html(viewer_html, height=800, scrolling=True)
+
+        # Additional information
+        st.markdown("---")
+        st.subheader("ℹ️ Viewer Controls")
+
+        col1, col2 = st.columns(2)
+
+        with col1:
+            st.markdown("**Navigation:**")
+            st.markdown("- Use the frame slider to navigate")
+            st.markdown("- Click on specific frames for details")
+            st.markdown("- View action history and rewards")
+
+        with col2:
+            st.markdown("**Episode Data:**")
+            st.markdown("- Frame-by-frame annotations")
+            st.markdown("- Cumulative rewards")
+            st.markdown("- Agent actions at each step")
 
 
 def main():
