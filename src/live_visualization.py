@@ -21,16 +21,18 @@ class LiveTrainingVisualizer:
     Updates plots dynamically as training progresses.
     """
 
-    def __init__(self, window_size: int = 100, update_interval: int = 10):
+    def __init__(self, window_size: int = 100, update_interval: int = 10, output_dir: str = 'outputs'):
         """
         Initialize live visualizer.
 
         Args:
             window_size: Number of recent episodes to display
             update_interval: Update plots every N episodes
+            output_dir: Directory to save visualization images
         """
         self.window_size = window_size
         self.update_interval = update_interval
+        self.output_dir = output_dir
 
         # Metric storage
         self.episodes = []
@@ -219,6 +221,12 @@ class LiveTrainingVisualizer:
         plt.tight_layout()
         self.fig.canvas.draw()
         self.fig.canvas.flush_events()
+
+        # Auto-save in headless environments
+        import os
+        os.makedirs(self.output_dir, exist_ok=True)
+        self.fig.savefig(f'{self.output_dir}/live_training_viz.png', dpi=150, bbox_inches='tight')
+        print(f"📊 Visualization updated → {self.output_dir}/live_training_viz.png")
 
     def save(self, filepath: str):
         """Save the current visualization."""
