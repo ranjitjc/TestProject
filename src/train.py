@@ -111,6 +111,12 @@ class Trainer:
         print(f"Number of episodes: {self.num_episodes}")
         print(f"Episode recording: Every {self.record_freq} episodes" if self.record_freq > 0 else "Episode recording: Disabled")
         print(f"Live visualization: {'Enabled' if self.enable_live_viz else 'Disabled'}")
+
+        # Detect headless environment
+        import os
+        self.is_headless = os.environ.get('DISPLAY') is None
+        if self.is_headless and (render or self.enable_live_viz):
+            print(f"Headless mode: Rendering will save to {self.output_dir}/render_current.png")
         print("-" * 50)
 
         recent_successes = []
@@ -160,10 +166,17 @@ class Trainer:
                 episode_reward += reward
                 steps += 1
 
-                # Render if requested
-                if render and episode % 10 == 0:
-                    self.env.render('human')
-                    time.sleep(0.01)
+                # Render if requested or if live visualization is enabled
+                if render or self.enable_live_viz:
+                    if self.is_headless:
+                        # Save to file in headless mode (every 5 steps to avoid too many files)
+                        if steps % 5 == 0:
+                            save_path = f'{self.output_dir}/render_current.png'
+                            self.env.render('human', save_path=save_path)
+                    else:
+                        self.env.render('human')
+                        if not render:  # Only sleep if render flag is explicitly set
+                            time.sleep(0.01)
 
             # Update epsilon
             self.agent.update_epsilon()
