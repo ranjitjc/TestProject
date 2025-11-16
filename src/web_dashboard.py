@@ -20,20 +20,23 @@ class TrainingDashboard:
     Provides real-time metrics, interactive controls, and model management.
     """
 
-    def __init__(self, log_dir: str = './outputs', model_dir: str = './models'):
+    def __init__(self, log_dir: str = './outputs', model_dir: str = './models', demo_dir: str = './demo_outputs'):
         """
         Initialize dashboard.
 
         Args:
             log_dir: Directory for training logs
             model_dir: Directory for saved models
+            demo_dir: Directory for demo outputs
         """
         self.log_dir = Path(log_dir)
         self.model_dir = Path(model_dir)
+        self.demo_dir = Path(demo_dir)
 
         # Create directories if needed
         self.log_dir.mkdir(exist_ok=True)
         self.model_dir.mkdir(exist_ok=True)
+        self.demo_dir.mkdir(exist_ok=True)
 
     def load_training_data(self, log_file: str = 'training_log.json') -> pd.DataFrame:
         """
@@ -136,11 +139,19 @@ class TrainingDashboard:
             layout="wide"
         )
 
-        st.title("🧩 Visual Maze Solving - Training Dashboard")
-        st.markdown("---")
-
         # Sidebar
         with st.sidebar:
+            st.header("📊 Navigation")
+
+            # Page selector
+            page = st.radio(
+                "Select Page",
+                ["Training Dashboard", "Demo Dashboard"],
+                key="page_selector"
+            )
+
+            st.markdown("---")
+
             st.header("⚙️ Settings")
 
             # Refresh rate
@@ -180,6 +191,22 @@ class TrainingDashboard:
             # Manual refresh button
             if st.button("🔄 Refresh Now"):
                 st.rerun()
+
+        # Route to appropriate page
+        if page == "Training Dashboard":
+            self.render_training_dashboard()
+        else:
+            self.render_demo_dashboard()
+
+        # Auto-refresh
+        if auto_refresh:
+            time.sleep(refresh_rate)
+            st.rerun()
+
+    def render_training_dashboard(self):
+        """Render the training dashboard page."""
+        st.title("🧩 Visual Maze Solving - Training Dashboard")
+        st.markdown("---")
 
         # Main content
         col1, col2, col3 = st.columns(3)
@@ -334,10 +361,88 @@ class TrainingDashboard:
                 else:
                     st.session_state['show_viewer'] = False  # Reset if file no longer exists
 
-        # Auto-refresh
-        if auto_refresh:
-            time.sleep(refresh_rate)
-            st.rerun()
+    def render_demo_dashboard(self):
+        """Render the demo/evaluation dashboard page."""
+        st.title("🎮 Demo & Evaluation Dashboard")
+        st.markdown("---")
+
+        # Check for demo outputs
+        demo_current = self.demo_dir / 'demo_current.png'
+        demo_summary = self.demo_dir / 'demo_summary.png'
+        demo_episodes = list(self.demo_dir.glob('demo_episode_*.pkl'))
+
+        if not demo_current.exists() and not demo_summary.exists():
+            st.info("No demo data available yet. Run a demo to see visualizations!")
+            st.markdown("**Run a demo:**")
+            st.code("python demo.py --model ./models/dqn_final.pth --episodes 10", language="bash")
+            st.caption("Add --record flag to save episodes for replay")
+            return
+
+        # Current demo frame
+        if demo_current.exists():
+            st.subheader("🎯 Current Demo State")
+            col1, col2 = st.columns([2, 1])
+
+            with col1:
+                st.image(str(demo_current), width='stretch',
+                        caption="Current demo frame (updates during demo)")
+
+            with col2:
+                st.markdown("**Demo Info**")
+                if demo_episodes:
+                    st.metric("Recorded Episodes", len(demo_episodes))
+                st.info("This shows the agent's current position during demo playback")
+
+        # Demo summary
+        if demo_summary.exists():
+            st.markdown("---")
+            st.subheader("📈 Demo Performance Summary")
+            st.image(str(demo_summary), width='stretch',
+                    caption="Performance analysis across all demo episodes")
+
+        # Recorded episodes
+        if demo_episodes:
+            st.markdown("---")
+            st.subheader("🎬 Recorded Demo Episodes")
+
+            col1, col2 = st.columns(2)
+
+            with col1:
+                st.write(f"**{len(demo_episodes)} episodes available for replay**")
+
+                # List episodes
+                episode_names = sorted([ep.name for ep in demo_episodes])
+                for ep_name in episode_names[:10]:  # Show first 10
+                    st.text(f"• {ep_name}")
+
+                if len(episode_names) > 10:
+                    st.caption(f"...and {len(episode_names) - 10} more")
+
+            with col2:
+                st.markdown("**Replay an episode:**")
+                st.code("python replay_viewer.py demo_outputs/demo_episode_0.pkl --export-images frames/",
+                       language="bash")
+                st.caption("This will generate an interactive HTML viewer")
+
+        # Demo commands reference
+        st.markdown("---")
+        st.subheader("💡 Demo Commands")
+
+        cmd_col1, cmd_col2 = st.columns(2)
+
+        with cmd_col1:
+            st.markdown("**Run basic demo:**")
+            st.code("python demo.py --episodes 10", language="bash")
+
+            st.markdown("**Demo with recording:**")
+            st.code("python demo.py --episodes 10 --record", language="bash")
+
+        with cmd_col2:
+            st.markdown("**Custom output directory:**")
+            st.code("python demo.py --save-dir my_demo --episodes 5", language="bash")
+
+            st.markdown("**View recorded episode:**")
+            st.code("python replay_viewer.py demo_outputs/demo_episode_0.pkl --summary", language="bash")
 
 
 def main():
