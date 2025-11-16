@@ -219,14 +219,18 @@ class MazeEnvironment:
         """
         img = self._get_observation()
 
+        # Save to file if path provided
+        if save_path:
+            cv2.imwrite(save_path, img)
+
+        # Also try to display if in human mode
         if mode == 'human':
             try:
                 cv2.imshow('Maze Environment', img)
                 cv2.waitKey(1)
-            except cv2.error:
-                # Headless mode - save to file if path provided
-                if save_path:
-                    cv2.imwrite(save_path, img)
+            except (cv2.error, AttributeError):
+                # Headless mode - cv2.imshow not available
+                pass
 
         return img
 

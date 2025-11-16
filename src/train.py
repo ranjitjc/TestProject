@@ -116,7 +116,7 @@ class Trainer:
         import os
         self.is_headless = os.environ.get('DISPLAY') is None
         if self.is_headless and render:
-            print(f"Headless mode: Rendering will save to {self.output_dir}/current_frame.png")
+            print(f"Headless mode: Rendering will save to {self.output_dir}/render_current.png")
         print("-" * 50)
 
         recent_successes = []
