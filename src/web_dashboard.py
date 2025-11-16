@@ -201,6 +201,30 @@ class TrainingDashboard:
                 width='stretch'
             )
 
+            # Display visualizations
+            st.markdown("---")
+            st.subheader("📸 Live Visualizations")
+
+            viz_col1, viz_col2 = st.columns(2)
+
+            with viz_col1:
+                st.write("**Training Progress**")
+                live_viz_path = self.log_dir / 'live_training_viz.png'
+                if live_viz_path.exists():
+                    st.image(str(live_viz_path), use_container_width=True,
+                            caption="Live Training Metrics (updates every 10 episodes)")
+                else:
+                    st.info("Live visualization will appear here when --live-viz is enabled")
+
+            with viz_col2:
+                st.write("**Current Training Frame**")
+                render_path = self.log_dir / 'render_current.png'
+                if render_path.exists():
+                    st.image(str(render_path), use_container_width=True,
+                            caption="Current maze state (updates during training with --render)")
+                else:
+                    st.info("Render frame will appear here when --render is enabled")
+
             # Statistics table
             st.subheader("📊 Training Statistics")
 
@@ -242,6 +266,30 @@ class TrainingDashboard:
 
         else:
             st.info("No training data available yet. Start training to see metrics!")
+
+            # Still show visualization slots even without training data
+            st.markdown("---")
+            st.subheader("📸 Live Visualizations")
+
+            viz_col1, viz_col2 = st.columns(2)
+
+            with viz_col1:
+                st.write("**Training Progress**")
+                live_viz_path = self.log_dir / 'live_training_viz.png'
+                if live_viz_path.exists():
+                    st.image(str(live_viz_path), use_container_width=True,
+                            caption="Live Training Metrics (updates every 10 episodes)")
+                else:
+                    st.info("Live visualization will appear here when training with --live-viz")
+
+            with viz_col2:
+                st.write("**Current Training Frame**")
+                render_path = self.log_dir / 'render_current.png'
+                if render_path.exists():
+                    st.image(str(render_path), use_container_width=True,
+                            caption="Current maze state (updates during training with --render)")
+                else:
+                    st.info("Render frame will appear here when training with --render")
 
         # Auto-refresh
         if auto_refresh:
