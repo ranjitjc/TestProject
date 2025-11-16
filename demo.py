@@ -152,9 +152,7 @@ def demo_agent(model_path: str, maze_size: int = 10, render_size: int = 84,
 
         # Save recorded episode
         if recorder:
-            recorder.episode.metadata['success'] = success
-            recorder.episode.metadata['steps'] = steps
-            recorder.episode.metadata['total_reward'] = episode_reward
+            recorder.finalize(success, steps, episode_reward, episode + 1)
             recorder.save(f'{save_dir}/demo_episode_{episode}.pkl')
             print(f"  Recorded episode saved to {save_dir}/demo_episode_{episode}.pkl")
 
