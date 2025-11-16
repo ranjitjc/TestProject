@@ -151,6 +151,21 @@ class TrainingDashboard:
 
             st.markdown("---")
 
+            # Episode viewer control
+            st.subheader("🎬 Episode Viewer")
+            viewer_path = Path("viewer.html")
+            if viewer_path.exists():
+                if st.button("📺 Open Episode Viewer", key="open_viewer"):
+                    st.session_state['show_viewer'] = True
+                if st.session_state.get('show_viewer', False):
+                    if st.button("✖️ Close Viewer", key="close_viewer"):
+                        st.session_state['show_viewer'] = False
+            else:
+                st.info("No episodes yet")
+                st.caption("Export frames to generate")
+
+            st.markdown("---")
+
             # Model selection
             st.subheader("📦 Models")
             models = list(self.model_dir.glob("*.pth"))
@@ -227,16 +242,18 @@ class TrainingDashboard:
                 else:
                     st.info("Render frame will appear here when --render is enabled")
 
-            # Episode viewer section
-            viewer_path = Path("viewer.html")
-            if viewer_path.exists():
-                st.markdown("---")
-                st.subheader("🎬 Episode Viewer")
-                with st.expander("📺 View Episodes Here", expanded=False):
+            # Episode viewer section - shows when button clicked in sidebar
+            if st.session_state.get('show_viewer', False):
+                viewer_path = Path("viewer.html")
+                if viewer_path.exists():
+                    st.markdown("---")
+                    st.subheader("🎬 Episode Viewer")
                     # Read and embed the viewer
                     with open(viewer_path, 'r') as f:
                         viewer_html = f.read()
                     st.components.v1.html(viewer_html, height=800, scrolling=True)
+                else:
+                    st.session_state['show_viewer'] = False  # Reset if file no longer exists
 
             # Statistics table
             st.subheader("📊 Training Statistics")
@@ -304,16 +321,18 @@ class TrainingDashboard:
                 else:
                     st.info("Render frame will appear here when training with --render")
 
-            # Episode viewer section
-            viewer_path = Path("viewer.html")
-            if viewer_path.exists():
-                st.markdown("---")
-                st.subheader("🎬 Episode Viewer")
-                with st.expander("📺 View Episodes Here", expanded=False):
+            # Episode viewer section - shows when button clicked in sidebar
+            if st.session_state.get('show_viewer', False):
+                viewer_path = Path("viewer.html")
+                if viewer_path.exists():
+                    st.markdown("---")
+                    st.subheader("🎬 Episode Viewer")
                     # Read and embed the viewer
                     with open(viewer_path, 'r') as f:
                         viewer_html = f.read()
                     st.components.v1.html(viewer_html, height=800, scrolling=True)
+                else:
+                    st.session_state['show_viewer'] = False  # Reset if file no longer exists
 
         # Auto-refresh
         if auto_refresh:
