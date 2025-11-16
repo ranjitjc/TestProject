@@ -14,13 +14,29 @@ A complete implementation of a Deep Q-Network (DQN) agent that learns to navigat
 
 ### 🎨 Advanced Visualization Features (New!)
 
-- **Live Training Dashboard**: Real-time plots updating during training
-  - Episode rewards with smoothing
-  - Episode length tracking
-  - Training loss monitoring
-  - Epsilon decay visualization
-  - Success rate tracking
-  - Cumulative statistics
+- **Multi-Page Web Dashboard**: Comprehensive monitoring interface with three specialized pages
+  - **Training Dashboard**: Real-time training metrics and performance
+    - Episode rewards with smoothing
+    - Episode length tracking
+    - Training loss monitoring
+    - Success rate tracking
+    - Live visualization updates
+    - Training statistics overview
+  - **Demo Dashboard**: Demo performance analysis and visualization
+    - Real-time demo frame visualization
+    - Performance summary charts (steps, rewards, success rate)
+    - Recorded episode management
+    - Demo command reference
+  - **Episode Viewer**: Interactive episode playback
+    - Frame-by-frame analysis
+    - Action and reward annotations
+    - Interactive HTML viewer embedding
+
+- **Demo Visualization System**: Automatic performance tracking
+  - Real-time frame saving during demo execution
+  - Automatic summary generation with 4-panel charts
+  - Episode recording for detailed analysis
+  - Headless environment support
 
 - **Heatmap Visualization**: Track agent exploration patterns
   - Visualize most-visited maze positions
@@ -29,17 +45,10 @@ A complete implementation of a Deep Q-Network (DQN) agent that learns to navigat
   - Compare exploration across episodes
 
 - **Episode Replay System**: Record and replay agent episodes
-  - Save episodes for later analysis
+  - Save episodes during training or demo
   - Frame-by-frame playback with annotations
   - Export episodes as video files
   - Compare performance across training stages
-
-- **Web-based Dashboard**: Interactive monitoring with Streamlit
-  - Real-time metrics streaming
-  - Interactive plots with Plotly
-  - Model management interface
-  - Auto-refresh capability
-  - Training statistics overview
 
 ## Architecture
 
@@ -128,32 +137,23 @@ python main.py train --help
 
 ### Demo
 
-Visualize a trained agent solving mazes:
+Visualize a trained agent solving mazes with automatic performance tracking:
 
 ```bash
-# Demo with default model
-python main.py demo
+# Basic demo
+python demo.py --model ./models/dqn_final.pth
 
-# Demo with specific model
-python main.py demo --model ./models/dqn_checkpoint_ep500.pth
+# Demo with visualization and episode recording
+python demo.py --model ./models/dqn_final.pth --episodes 10 --record
 
-# Custom settings
-python main.py demo --episodes 10 --delay 100
+# Demo with custom output directory
+python demo.py --model ./models/dqn_final.pth --save-dir my_demo --record
+
+# Using main.py
+python main.py demo --model ./models/dqn_final.pth
 
 # All demo options
-python main.py demo --help
-Usage:
-  # Train with episode recording (default every 50 episodes)
-  python main.py train --episodes 150
-
-  # Train with custom recording frequency
-  python main.py train --episodes 150 --record-freq 25
-
-  # Train with live visualization
-  python main.py train --episodes 150 --live-viz
-
-  # Disable episode recording
-  python main.py train --episodes 150 --record-freq 0
+python demo.py --help
 ```
 
 **Demo Options:**
@@ -162,8 +162,15 @@ Usage:
 - `--render-size`: Size of rendered images (default: 84) - **IMPORTANT**: Must match the render_size used during training
 - `--episodes`: Number of episodes to run (default: 5)
 - `--delay`: Delay between steps in ms (default: 200)
+- `--save-dir`: Directory to save demo outputs (default: demo_outputs)
+- `--record`: Record episodes as .pkl files for replay
 
 **Important Note**: The `--render-size` parameter must match the size used during training (default: 84) because the neural network architecture depends on the input image dimensions. Using a different size will cause model loading errors.
+
+**Demo Output Files:**
+- `demo_current.png`: Current frame during demo execution (updates in real-time)
+- `demo_summary.png`: 4-panel performance summary (steps, rewards, success rate, statistics)
+- `demo_episode_0.pkl`, `demo_episode_1.pkl`, etc.: Recorded episodes (when using --record)
 
 **Demo Controls:**
 - Press `q` to quit
@@ -189,35 +196,67 @@ python demo.py --model ./models/dqn_final.pth --episodes 10
 
 #### Web Dashboard (Recommended)
 
-Launch the interactive web dashboard for real-time monitoring:
+Launch the interactive multi-page web dashboard for comprehensive monitoring:
 
 ```bash
 # Start the dashboard
+streamlit run src/web_dashboard.py
+
+# Or use the wrapper script
 python run_dashboard.py
 
 # Then open your browser to: http://localhost:8501
 ```
 
+**Dashboard Pages:**
+
+1. **Training Dashboard**
+   - Real-time training metrics and plots
+   - Episode rewards, length, loss tracking
+   - Success rate monitoring
+   - Live visualization updates
+   - Training statistics overview
+   - Model selection and management
+
+2. **Demo Dashboard**
+   - Current demo frame visualization
+   - Performance summary charts
+   - Recorded episodes list
+   - Demo command reference
+   - Quick actions for running demos
+
+3. **Episode Viewer**
+   - Interactive HTML episode playback
+   - Frame-by-frame navigation
+   - Action and reward annotations
+   - Episode data visualization
+
 **Features:**
-- Real-time training metrics
+- Multi-page navigation for organized access
+- Auto-refresh for Training Dashboard
 - Interactive Plotly charts
-- Auto-refresh capability
-- Model management
-- Training statistics
+- Page-specific controls and information
+- Clean, isolated content per page
 
 #### Episode Replay
 
 View recorded episodes with frame-by-frame playback:
 
 ```bash
-# View a saved episode
+# View a training episode
 python replay_viewer.py outputs/episode_100.pkl
 
+# View a demo episode
+python replay_viewer.py demo_outputs/demo_episode_0.pkl
+
 # Show episode summary only
-python replay_viewer.py outputs/episode_100.pkl --summary
+python replay_viewer.py demo_outputs/demo_episode_0.pkl --summary
 
 # Export episode as video
-python replay_viewer.py outputs/episode_100.pkl --export-video output/episode_100.mp4 --fps 15
+python replay_viewer.py demo_outputs/demo_episode_0.pkl --export-video output/demo.mp4 --fps 15
+
+# Export frames to generate HTML viewer
+python replay_viewer.py demo_outputs/demo_episode_0.pkl --export-images frames/
 ```
 
 **Replay Controls:**
@@ -225,6 +264,8 @@ python replay_viewer.py outputs/episode_100.pkl --export-video output/episode_10
 - `p` - Pause/Resume
 - `n` - Next frame
 - `b` - Previous frame
+
+**Note:** Exporting frames with `--export-images` generates a `viewer.html` file that can be viewed in the Episode Viewer page of the web dashboard.
 
 #### Heatmap Visualization
 
@@ -239,7 +280,7 @@ Heatmaps are automatically generated during training and saved to `outputs/`. Th
 ```
 TestProject/
 ├── main.py                    # Main entry point
-├── demo.py                    # Demo script
+├── demo.py                    # Demo script with visualization
 ├── run_dashboard.py           # Launch web dashboard
 ├── replay_viewer.py           # Episode replay viewer
 ├── requirements.txt           # Python dependencies
@@ -252,9 +293,14 @@ TestProject/
 │   ├── live_visualization.py  # Real-time training plots
 │   ├── heatmap_visualizer.py  # Exploration heatmaps
 │   ├── episode_replay.py      # Episode recording & replay
-│   └── web_dashboard.py       # Streamlit dashboard
+│   └── web_dashboard.py       # Multi-page Streamlit dashboard
 ├── models/                    # Saved model checkpoints
 ├── outputs/                   # Training plots, metrics, replays
+├── demo_outputs/              # Demo visualizations and recordings
+│   ├── demo_current.png       # Current demo frame
+│   ├── demo_summary.png       # Performance summary
+│   └── demo_episode_*.pkl     # Recorded demo episodes
+├── viewer.html                # Generated episode viewer (optional)
 └── README.md
 ```
 
