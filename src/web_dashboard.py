@@ -154,24 +154,48 @@ class TrainingDashboard:
 
             st.header("⚙️ Settings")
 
-            # Refresh rate
-            refresh_rate = st.slider("Refresh Rate (seconds)", 1, 10, 5)
-
-            # Auto-refresh toggle
-            auto_refresh = st.checkbox("Auto-refresh", value=True)
+            # Refresh rate (only for Training and Demo dashboards)
+            if page != "Episode Viewer":
+                refresh_rate = st.slider("Refresh Rate (seconds)", 1, 10, 5)
+                auto_refresh = st.checkbox("Auto-refresh", value=True)
+            else:
+                refresh_rate = 5
+                auto_refresh = False
 
             st.markdown("---")
 
-            # Model selection
-            st.subheader("📦 Models")
-            models = list(self.model_dir.glob("*.pth"))
-            if models:
-                selected_model = st.selectbox(
-                    "Select Model",
-                    [m.name for m in models]
-                )
-            else:
-                st.info("No models found")
+            # Page-specific sidebar content
+            if page == "Training Dashboard":
+                # Model selection
+                st.subheader("📦 Models")
+                models = list(self.model_dir.glob("*.pth"))
+                if models:
+                    selected_model = st.selectbox(
+                        "Select Model",
+                        [m.name for m in models]
+                    )
+                else:
+                    st.info("No models found")
+
+            elif page == "Demo Dashboard":
+                # Demo-specific controls
+                st.subheader("🎮 Demo Info")
+                demo_episodes = list(self.demo_dir.glob('demo_episode_*.pkl'))
+                if demo_episodes:
+                    st.metric("Recorded Episodes", len(demo_episodes))
+                else:
+                    st.info("No recorded episodes")
+
+            elif page == "Episode Viewer":
+                # Episode viewer info
+                st.subheader("📁 Viewer Files")
+                viewer_path = Path("viewer.html")
+                if viewer_path.exists():
+                    st.success("✓ Viewer available")
+                else:
+                    st.warning("No viewer.html found")
+
+            st.markdown("---")
 
             # Manual refresh button
             if st.button("🔄 Refresh Now"):
