@@ -155,10 +155,28 @@ class TrainingDashboard:
             st.subheader("🎬 Episode Viewer")
             viewer_path = Path("viewer.html")
             if viewer_path.exists():
-                st.markdown("**[Open Episode Viewer](viewer.html)** 📺")
-                st.caption("View recorded episodes interactively")
+                st.success("✅ Episode viewer is ready!")
+
+                # Option 1: Direct file path
+                st.markdown("**Option 1:** Open directly in browser")
+                viewer_abs_path = viewer_path.absolute()
+                st.code(f"file://{viewer_abs_path}", language=None)
+
+                # Option 2: HTTP server
+                st.markdown("**Option 2:** Use HTTP server")
+                st.code("python -m http.server 8000", language="bash")
+                st.caption("Then open: http://localhost:8000/viewer.html")
+
+                # Button to show viewer in an expander
+                with st.expander("📺 View Episodes Here"):
+                    # Read and embed the viewer
+                    with open(viewer_path, 'r') as f:
+                        viewer_html = f.read()
+                    st.components.v1.html(viewer_html, height=800, scrolling=True)
+
             else:
                 st.info("Export episode frames to generate viewer.html")
+                st.caption("Run: python replay_viewer.py <episode.pkl> --export-images frames/")
 
             st.markdown("---")
 
@@ -224,7 +242,7 @@ class TrainingDashboard:
                 st.write("**Training Progress**")
                 live_viz_path = self.log_dir / 'live_training_viz.png'
                 if live_viz_path.exists():
-                    st.image(str(live_viz_path), use_container_width=True,
+                    st.image(str(live_viz_path), width='stretch',
                             caption="Live Training Metrics (updates every 10 episodes)")
                 else:
                     st.info("Live visualization will appear here when --live-viz is enabled")
@@ -233,7 +251,7 @@ class TrainingDashboard:
                 st.write("**Current Training Frame**")
                 render_path = self.log_dir / 'render_current.png'
                 if render_path.exists():
-                    st.image(str(render_path), use_container_width=True,
+                    st.image(str(render_path), width='stretch',
                             caption="Current maze state (updates during training with --render)")
                 else:
                     st.info("Render frame will appear here when --render is enabled")
@@ -290,7 +308,7 @@ class TrainingDashboard:
                 st.write("**Training Progress**")
                 live_viz_path = self.log_dir / 'live_training_viz.png'
                 if live_viz_path.exists():
-                    st.image(str(live_viz_path), use_container_width=True,
+                    st.image(str(live_viz_path), width='stretch',
                             caption="Live Training Metrics (updates every 10 episodes)")
                 else:
                     st.info("Live visualization will appear here when training with --live-viz")
@@ -299,7 +317,7 @@ class TrainingDashboard:
                 st.write("**Current Training Frame**")
                 render_path = self.log_dir / 'render_current.png'
                 if render_path.exists():
-                    st.image(str(render_path), use_container_width=True,
+                    st.image(str(render_path), width='stretch',
                             caption="Current maze state (updates during training with --render)")
                 else:
                     st.info("Render frame will appear here when training with --render")
