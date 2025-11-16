@@ -271,7 +271,7 @@ class TrainingDashboard:
             # Display plots
             st.plotly_chart(
                 self.create_metrics_plot(df),
-                width='stretch'
+                use_container_width=True
             )
 
             # Display visualizations
@@ -284,7 +284,7 @@ class TrainingDashboard:
                 st.write("**Training Progress**")
                 live_viz_path = self.log_dir / 'live_training_viz.png'
                 if live_viz_path.exists():
-                    st.image(str(live_viz_path), width='stretch',
+                    st.image(str(live_viz_path), use_container_width=True,
                             caption="Live Training Metrics (updates every 10 episodes)")
                 else:
                     st.info("Live visualization will appear here when --live-viz is enabled")
@@ -293,7 +293,7 @@ class TrainingDashboard:
                 st.write("**Current Training Frame**")
                 render_path = self.log_dir / 'render_current.png'
                 if render_path.exists():
-                    st.image(str(render_path), width='stretch',
+                    st.image(str(render_path), use_container_width=True,
                             caption="Current maze state (updates during training with --render)")
                 else:
                     st.info("Render frame will appear here when --render is enabled")
@@ -350,7 +350,7 @@ class TrainingDashboard:
                 st.write("**Training Progress**")
                 live_viz_path = self.log_dir / 'live_training_viz.png'
                 if live_viz_path.exists():
-                    st.image(str(live_viz_path), width='stretch',
+                    st.image(str(live_viz_path), use_container_width=True,
                             caption="Live Training Metrics (updates every 10 episodes)")
                 else:
                     st.info("Live visualization will appear here when training with --live-viz")
@@ -359,7 +359,7 @@ class TrainingDashboard:
                 st.write("**Current Training Frame**")
                 render_path = self.log_dir / 'render_current.png'
                 if render_path.exists():
-                    st.image(str(render_path), width='stretch',
+                    st.image(str(render_path), use_container_width=True,
                             caption="Current maze state (updates during training with --render)")
                 else:
                     st.info("Render frame will appear here when training with --render")
@@ -387,7 +387,7 @@ class TrainingDashboard:
             col1, col2 = st.columns([2, 1])
 
             with col1:
-                st.image(str(demo_current), width='stretch',
+                st.image(str(demo_current), use_container_width=True,
                         caption="Current demo frame (updates during demo)")
 
             with col2:
@@ -400,7 +400,7 @@ class TrainingDashboard:
         if demo_summary.exists():
             st.markdown("---")
             st.subheader("📈 Demo Performance Summary")
-            st.image(str(demo_summary), width='stretch',
+            st.image(str(demo_summary), use_container_width=True,
                     caption="Performance analysis across all demo episodes")
 
         # Recorded episodes
