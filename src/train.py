@@ -116,7 +116,9 @@ class Trainer:
         import os
         self.is_headless = os.environ.get('DISPLAY') is None
         if self.is_headless and (render or self.enable_live_viz):
-            print(f"Headless mode: Rendering will save to {self.output_dir}/render_current.png")
+            print(f"Headless mode: Visualizations will save to {self.output_dir}/")
+            print(f"  - render_current.png (current maze state)")
+            print(f"  - heatmap_current.png (exploration heatmap)")
         print("-" * 50)
 
         recent_successes = []
