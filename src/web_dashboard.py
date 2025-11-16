@@ -281,22 +281,33 @@ class TrainingDashboard:
             viz_col1, viz_col2 = st.columns(2)
 
             with viz_col1:
-                st.write("**Training Progress**")
-                live_viz_path = self.log_dir / 'live_training_viz.png'
-                if live_viz_path.exists():
-                    st.image(str(live_viz_path), use_container_width=True,
-                            caption="Live Training Metrics (updates every 10 episodes)")
-                else:
-                    st.info("Live visualization will appear here when --live-viz is enabled")
-
-            with viz_col2:
                 st.write("**Current Training Frame**")
                 render_path = self.log_dir / 'render_current.png'
                 if render_path.exists():
                     st.image(str(render_path), use_container_width=True,
-                            caption="Current maze state (updates during training with --render)")
+                            caption="Current maze state (updates during training)")
                 else:
-                    st.info("Render frame will appear here when --render is enabled")
+                    st.info("Render frame will appear here when training with --render")
+
+            with viz_col2:
+                st.write("**Current Exploration Heatmap**")
+                heatmap_path = self.log_dir / 'heatmap_current.png'
+                if heatmap_path.exists():
+                    st.image(str(heatmap_path), use_container_width=True,
+                            caption="Live exploration tracking (same maze as current frame)")
+                else:
+                    st.info("Heatmap will appear here during training")
+
+            # Training metrics chart
+            st.markdown("---")
+            st.subheader("📊 Training Metrics Chart")
+
+            live_viz_path = self.log_dir / 'live_training_viz.png'
+            if live_viz_path.exists():
+                st.image(str(live_viz_path), use_container_width=True,
+                        caption="Live Training Metrics (updates every 10 episodes)")
+            else:
+                st.info("Training metrics chart will appear here when --live-viz is enabled")
 
             # Statistics table
             st.subheader("📊 Training Statistics")
@@ -347,22 +358,33 @@ class TrainingDashboard:
             viz_col1, viz_col2 = st.columns(2)
 
             with viz_col1:
-                st.write("**Training Progress**")
-                live_viz_path = self.log_dir / 'live_training_viz.png'
-                if live_viz_path.exists():
-                    st.image(str(live_viz_path), use_container_width=True,
-                            caption="Live Training Metrics (updates every 10 episodes)")
-                else:
-                    st.info("Live visualization will appear here when training with --live-viz")
-
-            with viz_col2:
                 st.write("**Current Training Frame**")
                 render_path = self.log_dir / 'render_current.png'
                 if render_path.exists():
                     st.image(str(render_path), use_container_width=True,
-                            caption="Current maze state (updates during training with --render)")
+                            caption="Current maze state (updates during training)")
                 else:
                     st.info("Render frame will appear here when training with --render")
+
+            with viz_col2:
+                st.write("**Current Exploration Heatmap**")
+                heatmap_path = self.log_dir / 'heatmap_current.png'
+                if heatmap_path.exists():
+                    st.image(str(heatmap_path), use_container_width=True,
+                            caption="Live exploration tracking (same maze as current frame)")
+                else:
+                    st.info("Heatmap will appear here during training")
+
+            # Training metrics chart
+            st.markdown("---")
+            st.subheader("📊 Training Metrics Chart")
+
+            live_viz_path = self.log_dir / 'live_training_viz.png'
+            if live_viz_path.exists():
+                st.image(str(live_viz_path), use_container_width=True,
+                        caption="Live Training Metrics (updates every 10 episodes)")
+            else:
+                st.info("Training metrics chart will appear here when --live-viz is enabled")
 
     def render_demo_dashboard(self):
         """Render the demo/evaluation dashboard page."""
