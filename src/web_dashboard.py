@@ -162,52 +162,31 @@ class TrainingDashboard:
 
             st.markdown("---")
 
-            # Page-specific sidebar controls
-            if page == "Training Dashboard":
-                # Episode viewer control
-                st.subheader("🎬 Episode Viewer")
-                viewer_path = Path("viewer.html")
-                if viewer_path.exists():
-                    if st.button("📺 Open Episode Viewer", key="open_viewer"):
-                        st.session_state['show_viewer'] = True
-                    if st.session_state.get('show_viewer', False):
-                        if st.button("✖️ Close Viewer", key="close_viewer"):
-                            st.session_state['show_viewer'] = False
-                else:
-                    st.info("No episodes yet")
-                    st.caption("Export frames to generate")
-
-                st.markdown("---")
-
-                # Model selection
-                st.subheader("📦 Models")
-                models = list(self.model_dir.glob("*.pth"))
-                if models:
-                    selected_model = st.selectbox(
-                        "Select Model",
-                        [m.name for m in models]
-                    )
-                else:
-                    st.info("No models found")
-
-            else:  # Demo Dashboard
-                # Demo-specific controls
-                st.subheader("🎮 Demo Controls")
-
-                # Demo directory info
-                demo_episodes = list(self.demo_dir.glob('demo_episode_*.pkl'))
-                if demo_episodes:
-                    st.metric("Recorded Episodes", len(demo_episodes))
-                else:
-                    st.info("No recorded episodes")
-
-                st.markdown("---")
-
-                # Quick actions
-                st.subheader("⚡ Quick Actions")
-                st.code("python demo.py --episodes 10 --record", language="bash")
+            # Episode viewer control
+            st.subheader("🎬 Episode Viewer")
+            viewer_path = Path("viewer.html")
+            if viewer_path.exists():
+                if st.button("📺 Open Episode Viewer", key="open_viewer"):
+                    st.session_state['show_viewer'] = True
+                if st.session_state.get('show_viewer', False):
+                    if st.button("✖️ Close Viewer", key="close_viewer"):
+                        st.session_state['show_viewer'] = False
+            else:
+                st.info("No episodes yet")
+                st.caption("Export frames to generate")
 
             st.markdown("---")
+
+            # Model selection
+            st.subheader("📦 Models")
+            models = list(self.model_dir.glob("*.pth"))
+            if models:
+                selected_model = st.selectbox(
+                    "Select Model",
+                    [m.name for m in models]
+                )
+            else:
+                st.info("No models found")
 
             # Manual refresh button
             if st.button("🔄 Refresh Now"):
