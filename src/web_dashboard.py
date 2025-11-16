@@ -151,32 +151,15 @@ class TrainingDashboard:
 
             st.markdown("---")
 
-            # Episode viewer link
+            # Episode viewer status
             st.subheader("🎬 Episode Viewer")
             viewer_path = Path("viewer.html")
             if viewer_path.exists():
-                st.success("✅ Episode viewer is ready!")
-
-                # Option 1: Direct file path
-                st.markdown("**Option 1:** Open directly in browser")
-                viewer_abs_path = viewer_path.absolute()
-                st.code(f"file://{viewer_abs_path}", language=None)
-
-                # Option 2: HTTP server
-                st.markdown("**Option 2:** Use HTTP server")
-                st.code("python -m http.server 8000", language="bash")
-                st.caption("Then open: http://localhost:8000/viewer.html")
-
-                # Button to show viewer in an expander
-                with st.expander("📺 View Episodes Here"):
-                    # Read and embed the viewer
-                    with open(viewer_path, 'r') as f:
-                        viewer_html = f.read()
-                    st.components.v1.html(viewer_html, height=800, scrolling=True)
-
+                st.success("✅ Viewer ready!")
+                st.caption("See main panel below")
             else:
-                st.info("Export episode frames to generate viewer.html")
-                st.caption("Run: python replay_viewer.py <episode.pkl> --export-images frames/")
+                st.info("No episodes yet")
+                st.caption("Export frames to generate")
 
             st.markdown("---")
 
@@ -256,6 +239,20 @@ class TrainingDashboard:
                 else:
                     st.info("Render frame will appear here when --render is enabled")
 
+            # Episode viewer section (moved from sidebar)
+            st.markdown("---")
+            st.subheader("🎬 Episode Viewer")
+            viewer_path = Path("viewer.html")
+            if viewer_path.exists():
+                with st.expander("📺 View Episodes Here", expanded=False):
+                    # Read and embed the viewer
+                    with open(viewer_path, 'r') as f:
+                        viewer_html = f.read()
+                    st.components.v1.html(viewer_html, height=800, scrolling=True)
+            else:
+                st.info("Export episode frames to generate viewer.html")
+                st.caption("Run: python replay_viewer.py <episode.pkl> --export-images frames/")
+
             # Statistics table
             st.subheader("📊 Training Statistics")
 
@@ -321,6 +318,20 @@ class TrainingDashboard:
                             caption="Current maze state (updates during training with --render)")
                 else:
                     st.info("Render frame will appear here when training with --render")
+
+            # Episode viewer section (moved from sidebar)
+            st.markdown("---")
+            st.subheader("🎬 Episode Viewer")
+            viewer_path = Path("viewer.html")
+            if viewer_path.exists():
+                with st.expander("📺 View Episodes Here", expanded=False):
+                    # Read and embed the viewer
+                    with open(viewer_path, 'r') as f:
+                        viewer_html = f.read()
+                    st.components.v1.html(viewer_html, height=800, scrolling=True)
+            else:
+                st.info("Export episode frames to generate viewer.html")
+                st.caption("Run: python replay_viewer.py <episode.pkl> --export-images frames/")
 
         # Auto-refresh
         if auto_refresh:
