@@ -149,6 +149,19 @@ class TrainingDashboard:
             # Auto-refresh toggle
             auto_refresh = st.checkbox("Auto-refresh", value=True)
 
+            st.markdown("---")
+
+            # Episode viewer link
+            st.subheader("🎬 Episode Viewer")
+            viewer_path = Path("viewer.html")
+            if viewer_path.exists():
+                st.markdown("**[Open Episode Viewer](viewer.html)** 📺")
+                st.caption("View recorded episodes interactively")
+            else:
+                st.info("Export episode frames to generate viewer.html")
+
+            st.markdown("---")
+
             # Model selection
             st.subheader("📦 Models")
             models = list(self.model_dir.glob("*.pth"))
