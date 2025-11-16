@@ -142,6 +142,18 @@ python main.py demo --episodes 10 --delay 100
 
 # All demo options
 python main.py demo --help
+Usage:
+  # Train with episode recording (default every 50 episodes)
+  python main.py train --episodes 150
+
+  # Train with custom recording frequency
+  python main.py train --episodes 150 --record-freq 25
+
+  # Train with live visualization
+  python main.py train --episodes 150 --live-viz
+
+  # Disable episode recording
+  python main.py train --episodes 150 --record-freq 0
 ```
 
 **Demo Options:**
@@ -205,7 +217,7 @@ python replay_viewer.py outputs/episode_100.pkl
 python replay_viewer.py outputs/episode_100.pkl --summary
 
 # Export episode as video
-python replay_viewer.py outputs/episode_100.pkl --export-video episode_100.mp4 --fps 15
+python replay_viewer.py outputs/episode_100.pkl --export-video output/episode_100.mp4 --fps 15
 ```
 
 **Replay Controls:**
