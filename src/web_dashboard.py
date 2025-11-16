@@ -152,20 +152,14 @@ class TrainingDashboard:
 
             st.markdown("---")
 
-            st.header("⚙️ Settings")
-
-            # Refresh rate (only for Training and Demo dashboards)
-            if page != "Episode Viewer":
-                refresh_rate = st.slider("Refresh Rate (seconds)", 1, 10, 5)
-                auto_refresh = st.checkbox("Auto-refresh", value=True)
-            else:
-                refresh_rate = 5
-                auto_refresh = False
-
-            st.markdown("---")
-
             # Page-specific sidebar content
             if page == "Training Dashboard":
+                st.header("⚙️ Settings")
+                refresh_rate = st.slider("Refresh Rate (seconds)", 1, 10, 5)
+                auto_refresh = st.checkbox("Auto-refresh", value=True)
+
+                st.markdown("---")
+
                 # Model selection
                 st.subheader("📦 Models")
                 models = list(self.model_dir.glob("*.pth"))
@@ -177,7 +171,16 @@ class TrainingDashboard:
                 else:
                     st.info("No models found")
 
+                st.markdown("---")
+
+                # Manual refresh button
+                if st.button("🔄 Refresh Now"):
+                    st.rerun()
+
             elif page == "Demo Dashboard":
+                refresh_rate = 5
+                auto_refresh = False
+
                 # Demo-specific controls
                 st.subheader("🎮 Demo Info")
                 demo_episodes = list(self.demo_dir.glob('demo_episode_*.pkl'))
@@ -186,7 +189,22 @@ class TrainingDashboard:
                 else:
                     st.info("No recorded episodes")
 
+                st.markdown("---")
+
+                # Quick actions
+                st.subheader("⚡ Quick Actions")
+                st.code("python demo.py --episodes 10 --record", language="bash")
+
+                st.markdown("---")
+
+                # Manual refresh button
+                if st.button("🔄 Refresh Now"):
+                    st.rerun()
+
             elif page == "Episode Viewer":
+                refresh_rate = 5
+                auto_refresh = False
+
                 # Episode viewer info
                 st.subheader("📁 Viewer Files")
                 viewer_path = Path("viewer.html")
@@ -195,11 +213,11 @@ class TrainingDashboard:
                 else:
                     st.warning("No viewer.html found")
 
-            st.markdown("---")
+                st.markdown("---")
 
-            # Manual refresh button
-            if st.button("🔄 Refresh Now"):
-                st.rerun()
+                # Manual refresh button
+                if st.button("🔄 Refresh Now"):
+                    st.rerun()
 
         # Route to appropriate page
         if page == "Training Dashboard":
