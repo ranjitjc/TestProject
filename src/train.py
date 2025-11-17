@@ -145,8 +145,10 @@ class Trainer:
                 recorder = EpisodeRecorder()
 
             while not done:
-                # Record agent position for heatmap
-                episode_path.append(tuple(self.env.agent_pos))
+                # Record agent position for heatmap (both for path and real-time tracking)
+                current_pos = tuple(self.env.agent_pos)
+                episode_path.append(current_pos)
+                self.heatmap_viz.record_position(current_pos)  # Update heatmap in real-time
 
                 # Select and perform action
                 action = self.agent.select_action(state, training=True)
@@ -214,8 +216,8 @@ class Trainer:
 
             success_rate = np.mean(recent_successes) * 100
 
-            # Update heatmap with episode path
-            self.heatmap_viz.record_path(episode_path)
+            # Store episode path for later analysis (positions already recorded in real-time)
+            self.heatmap_viz.episode_paths.append(episode_path)
 
             # Save episode recording if needed
             if should_record:
