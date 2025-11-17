@@ -170,24 +170,30 @@ class Trainer:
 
                 # Render if requested or if live visualization is enabled
                 if render or self.enable_live_viz:
+                    # Save heatmap alongside render every 10 steps for real-time tracking
+                    if steps % 10 == 0:
+                        try:
+                            self.heatmap_viz.save_heatmap(
+                                f'{self.output_dir}/heatmap_current.png',
+                                verbose=False,  # Suppress print to avoid spam during training
+                                maze=self.env.maze,
+                                start_pos=self.env.start_pos,
+                                goal_pos=self.env.goal_pos
+                            )
+                        except Exception:
+                            pass  # Silently fail if heatmap save fails during training
+
                     if self.is_headless:
                         # Save to file in headless mode (every 10 steps to avoid too many files)
                         if steps % 10 == 0:
                             save_path = f'{self.output_dir}/render_current.png'
                             self.env.render('human', save_path=save_path)
-
-                            # Also save current heatmap to match the rendered maze
-                            try:
-                                self.heatmap_viz.save_heatmap(
-                                    f'{self.output_dir}/heatmap_current.png',
-                                    maze=self.env.maze,
-                                    start_pos=self.env.start_pos,
-                                    goal_pos=self.env.goal_pos
-                                )
-                            except Exception:
-                                pass  # Silently fail if heatmap save fails during training
                     else:
+                        # Display in window and also save to file for dashboard
                         self.env.render('human')
+                        if steps % 10 == 0:
+                            save_path = f'{self.output_dir}/render_current.png'
+                            self.env.render('rgb_array', save_path=save_path)
                         if not render:  # Only sleep if render flag is explicitly set
                             time.sleep(0.01)
 

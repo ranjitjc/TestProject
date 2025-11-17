@@ -196,9 +196,17 @@ class HeatmapVisualizer:
         self.visit_counts = np.zeros((self.maze_size, self.maze_size), dtype=np.int32)
         self.episode_paths = []
 
-    def save_heatmap(self, filepath: str, **kwargs):
-        """Save heatmap to file."""
+    def save_heatmap(self, filepath: str, verbose: bool = True, **kwargs):
+        """
+        Save heatmap to file.
+
+        Args:
+            filepath: Path to save the heatmap
+            verbose: Whether to print save confirmation (default: True)
+            **kwargs: Additional arguments passed to create_heatmap
+        """
         fig = self.create_heatmap(**kwargs)
         fig.savefig(filepath, dpi=150, bbox_inches='tight')
         plt.close(fig)
-        print(f"Heatmap saved to {filepath}")
+        if verbose:
+            print(f"Heatmap saved to {filepath}")
