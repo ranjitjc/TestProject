@@ -16,11 +16,12 @@ A complete implementation of a Deep Q-Network (DQN) agent that learns to navigat
 
 - **Multi-Page Web Dashboard**: Comprehensive monitoring interface with three specialized pages
   - **Training Dashboard**: Real-time training metrics and performance
+    - Side-by-side current maze frame and exploration heatmap
     - Episode rewards with smoothing
     - Episode length tracking
     - Training loss monitoring
     - Success rate tracking
-    - Live visualization updates
+    - Live visualization updates every 10 steps
     - Training statistics overview
   - **Demo Dashboard**: Demo performance analysis and visualization
     - Real-time demo frame visualization
@@ -38,11 +39,13 @@ A complete implementation of a Deep Q-Network (DQN) agent that learns to navigat
   - Episode recording for detailed analysis
   - Headless environment support
 
-- **Heatmap Visualization**: Track agent exploration patterns
+- **Real-Time Heatmap Visualization**: Track agent exploration patterns during training
+  - Live heatmap updates every 10 steps (synchronized with maze rendering)
   - Visualize most-visited maze positions
-  - Episode path tracking
+  - Episode path tracking and cumulative exploration
   - Coverage analysis
   - Compare exploration across episodes
+  - Side-by-side display with current maze state in dashboard
 
 - **Episode Replay System**: Record and replay agent episodes
   - Save episodes during training or demo
@@ -72,6 +75,7 @@ A complete implementation of a Deep Q-Network (DQN) agent that learns to navigat
 - Target network for stability
 - Huber loss (Smooth L1)
 - Adam optimizer
+- Early stopping when target success rate achieved (default: 95%)
 
 ## Installation
 
@@ -121,8 +125,8 @@ python main.py train
 # Custom maze size and more episodes
 python main.py train --maze-size 15 --episodes 2000
 
-# With visual rendering during training
-python main.py train --render --episodes 1000
+# With visual rendering and live visualization
+python main.py train --render --live-viz --episodes 1000
 
 # All training options
 python main.py train --help
@@ -133,7 +137,15 @@ python main.py train --help
 - `--render-size`: Size of rendered images for training (default: 84)
 - `--episodes`: Number of training episodes (default: 1000)
 - `--render`: Show visual rendering during training
+- `--live-viz`: Enable live training visualization (real-time charts and heatmaps)
 - `--save-freq`: Frequency to save model checkpoints (default: 100)
+- `--record-freq`: Frequency to record episodes (default: 50, set to 0 to disable)
+
+**Training Features:**
+- **Early Stopping**: Training automatically stops when 95% success rate is achieved (configurable)
+- **Real-Time Visualization**: Live maze rendering and exploration heatmap updates every 10 steps
+- **Progress Tracking**: Auto-saved training logs for dashboard monitoring
+- **Model Checkpoints**: Periodic saves and final model preservation
 
 ### Demo
 
@@ -269,11 +281,20 @@ python replay_viewer.py demo_outputs/demo_episode_0.pkl --export-images frames/
 
 #### Heatmap Visualization
 
-Heatmaps are automatically generated during training and saved to `outputs/`. They show:
-- Most frequently visited positions
-- Agent exploration patterns
-- Coverage statistics
-- Episode paths
+Heatmaps are automatically generated in real-time during training and saved to `outputs/`:
+
+**Real-Time Updates:**
+- `heatmap_current.png` - Updates every 10 steps during training
+- Synchronized with `render_current.png` for side-by-side comparison
+- Shows cumulative exploration including ongoing episode
+- Displayed in Training Dashboard alongside current maze frame
+
+**Features:**
+- Most frequently visited positions (hotter colors = more visits)
+- Agent exploration patterns and path tracking
+- Coverage analysis and statistics
+- Episode-by-episode path visualization
+- Final summary: `exploration_heatmap.png`
 
 ## Project Structure
 
@@ -295,7 +316,15 @@ TestProject/
 │   ├── episode_replay.py      # Episode recording & replay
 │   └── web_dashboard.py       # Multi-page Streamlit dashboard
 ├── models/                    # Saved model checkpoints
+│   ├── dqn_final.pth          # Final trained model
+│   └── dqn_early_stopped_*.pth # Early-stopped models (if triggered)
 ├── outputs/                   # Training plots, metrics, replays
+│   ├── render_current.png     # Current maze state (real-time)
+│   ├── heatmap_current.png    # Current exploration heatmap (real-time)
+│   ├── live_training_viz.png  # Training metrics chart
+│   ├── exploration_heatmap.png # Final exploration summary
+│   ├── training_log.json      # Training metrics log
+│   └── episode_*.pkl          # Recorded training episodes
 ├── demo_outputs/              # Demo visualizations and recordings
 │   ├── demo_current.png       # Current demo frame
 │   ├── demo_summary.png       # Performance summary
