@@ -34,7 +34,8 @@ class Trainer:
         model_dir: str = './models',
         output_dir: str = './outputs',
         record_freq: int = 50,
-        enable_live_viz: bool = False
+        enable_live_viz: bool = False,
+        early_stopping_threshold: float = 95.0
     ):
         """
         Initialize the trainer.
@@ -48,6 +49,7 @@ class Trainer:
             output_dir: Directory to save outputs
             record_freq: Frequency to record episodes (0 = disable)
             enable_live_viz: Enable live training visualization
+            early_stopping_threshold: Success rate % to trigger early stopping (0 = disable)
         """
         self.maze_size = maze_size
         self.render_size = render_size
@@ -57,6 +59,7 @@ class Trainer:
         self.output_dir = output_dir
         self.record_freq = record_freq
         self.enable_live_viz = enable_live_viz
+        self.early_stopping_threshold = early_stopping_threshold
 
         # Create directories
         os.makedirs(model_dir, exist_ok=True)
@@ -111,6 +114,7 @@ class Trainer:
         print(f"Number of episodes: {self.num_episodes}")
         print(f"Episode recording: Every {self.record_freq} episodes" if self.record_freq > 0 else "Episode recording: Disabled")
         print(f"Live visualization: {'Enabled' if self.enable_live_viz else 'Disabled'}")
+        print(f"Early stopping: {'Enabled at ' + str(self.early_stopping_threshold) + '% success rate' if self.early_stopping_threshold > 0 else 'Disabled'}")
 
         # Detect headless environment
         import os
@@ -215,6 +219,27 @@ class Trainer:
                 recent_successes.pop(0)
 
             success_rate = np.mean(recent_successes) * 100
+
+            # Early stopping if agent achieves high success rate
+            # Only check after enough episodes to have a meaningful success rate
+            if (self.early_stopping_threshold > 0 and
+                len(recent_successes) >= 50 and
+                success_rate >= self.early_stopping_threshold):
+                print(f"\n{'='*50}")
+                print(f"🎉 EARLY STOPPING - Target Success Rate Achieved!")
+                print(f"{'='*50}")
+                print(f"Episode: {episode + 1}/{self.num_episodes}")
+                print(f"Success Rate: {success_rate:.1f}% (target: {self.early_stopping_threshold}%)")
+                print(f"Agent has mastered the {self.maze_size}x{self.maze_size} maze!")
+                print(f"{'='*50}\n")
+                # Break out of training loop
+                self.num_episodes = episode + 1  # Update for proper stats calculation
+                # Store final episode data
+                self.heatmap_viz.episode_paths.append(episode_path)
+                # Save final model
+                self.agent.save(f'{self.model_dir}/dqn_early_stopped_ep{episode + 1}.pth')
+                print(f"Final model saved: dqn_early_stopped_ep{episode + 1}.pth")
+                break
 
             # Store episode path for later analysis (positions already recorded in real-time)
             self.heatmap_viz.episode_paths.append(episode_path)
