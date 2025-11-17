@@ -296,6 +296,22 @@ class Trainer:
         # Save final model
         self.save_model("dqn_final.pth")
 
+        # Save the training maze for demo testing
+        print("\nSaving training maze...")
+        try:
+            import pickle
+            maze_data = {
+                'maze': self.env.maze,
+                'start_pos': self.env.start_pos,
+                'goal_pos': self.env.goal_pos,
+                'maze_size': self.maze_size
+            }
+            with open(f'{self.model_dir}/training_maze.pkl', 'wb') as f:
+                pickle.dump(maze_data, f)
+            print(f"  ✓ Training maze saved to {self.model_dir}/training_maze.pkl")
+        except Exception as e:
+            print(f"  ✗ Maze save failed: {e}")
+
         # Save visualizations
         print("\nSaving visualizations...")
 

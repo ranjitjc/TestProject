@@ -45,8 +45,32 @@ def demo_agent(model_path: str, maze_size: int = 10, render_size: int = 84,
         print("Please train a model first using: python src/train.py")
         return
 
+    # Try to load the training maze for fair comparison
+    training_maze_path = os.path.join(os.path.dirname(model_path), 'training_maze.pkl')
+    maze_data = None
+    if os.path.exists(training_maze_path):
+        try:
+            import pickle
+            with open(training_maze_path, 'rb') as f:
+                maze_data = pickle.load(f)
+            print(f"✓ Loaded training maze from {training_maze_path}")
+            print("  Testing agent on the SAME maze it was trained on...")
+        except Exception as e:
+            print(f"Warning: Could not load training maze: {e}")
+            print("Generating new random maze instead...")
+    else:
+        print("No training maze found - generating new random maze")
+        print("Note: Agent may fail on new mazes if it only trained on one maze")
+
     # Initialize environment
     env = MazeEnvironment(maze_size=maze_size, render_size=render_size)
+
+    # Override with training maze if loaded
+    if maze_data:
+        env.maze = maze_data['maze']
+        env.start_pos = maze_data['start_pos']
+        env.goal_pos = maze_data['goal_pos']
+        print(f"  Using training maze: {maze_data['maze_size']}x{maze_data['maze_size']}")
 
     # Initialize agent
     input_shape = (render_size, render_size, 3)
