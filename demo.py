@@ -9,7 +9,8 @@ import argparse
 import cv2
 import numpy as np
 import matplotlib
-matplotlib.use('Agg')  # Use non-interactive backend for headless
+
+matplotlib.use("Agg")  # Use non-interactive backend for headless
 import matplotlib.pyplot as plt
 
 from src.maze_environment import MazeEnvironment
@@ -17,9 +18,15 @@ from src.dqn_agent import DQNAgent
 from src.episode_replay import EpisodeRecorder
 
 
-def demo_agent(model_path: str, maze_size: int = 10, render_size: int = 84,
-               num_episodes: int = 5, delay: int = 100, save_dir: str = 'demo_outputs',
-               record_episodes: bool = False):
+def demo_agent(
+    model_path: str,
+    maze_size: int = 10,
+    render_size: int = 84,
+    num_episodes: int = 5,
+    delay: int = 100,
+    save_dir: str = "demo_outputs",
+    record_episodes: bool = False,
+):
     """
     Demonstrate a trained agent solving mazes.
 
@@ -36,7 +43,7 @@ def demo_agent(model_path: str, maze_size: int = 10, render_size: int = 84,
     os.makedirs(save_dir, exist_ok=True)
 
     # Detect headless mode
-    is_headless = os.environ.get('DISPLAY') is None
+    is_headless = os.environ.get("DISPLAY") is None
     if is_headless:
         print("Headless mode detected - saving visualizations to files")
     # Check if model exists
@@ -46,12 +53,13 @@ def demo_agent(model_path: str, maze_size: int = 10, render_size: int = 84,
         return
 
     # Try to load the training maze for fair comparison
-    training_maze_path = os.path.join(os.path.dirname(model_path), 'training_maze.pkl')
+    training_maze_path = os.path.join(os.path.dirname(model_path), "training_maze.pkl")
     maze_data = None
     if os.path.exists(training_maze_path):
         try:
             import pickle
-            with open(training_maze_path, 'rb') as f:
+
+            with open(training_maze_path, "rb") as f:
                 maze_data = pickle.load(f)
             print(f"✓ Loaded training maze from {training_maze_path}")
             print("  Testing agent on the SAME maze it was trained on...")
@@ -67,10 +75,12 @@ def demo_agent(model_path: str, maze_size: int = 10, render_size: int = 84,
 
     # Override with training maze if loaded
     if maze_data:
-        env.maze = maze_data['maze']
-        env.start_pos = maze_data['start_pos']
-        env.goal_pos = maze_data['goal_pos']
-        print(f"  Using training maze: {maze_data['maze_size']}x{maze_data['maze_size']}")
+        env.maze = maze_data["maze"]
+        env.start_pos = maze_data["start_pos"]
+        env.goal_pos = maze_data["goal_pos"]
+        print(
+            f"  Using training maze: {maze_data['maze_size']}x{maze_data['maze_size']}"
+        )
 
     # Initialize agent
     input_shape = (render_size, render_size, 3)
@@ -79,7 +89,7 @@ def demo_agent(model_path: str, maze_size: int = 10, render_size: int = 84,
         num_actions=env.num_actions,
         epsilon_start=0.0,  # No exploration for demo
         epsilon_end=0.0,
-        use_dueling=True
+        use_dueling=True,
     )
 
     # Load trained model
@@ -114,16 +124,37 @@ def demo_agent(model_path: str, maze_size: int = 10, render_size: int = 84,
 
         while not done:
             # Render environment
-            img = env.render('rgb_array')
+            img = env.render("rgb_array")
 
             # Add episode info to image
             info_img = np.ones((80, render_size, 3), dtype=np.uint8) * 255
-            cv2.putText(info_img, f"Episode: {episode + 1}/{num_episodes}",
-                       (10, 25), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 1)
-            cv2.putText(info_img, f"Steps: {steps}",
-                       (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 1)
-            cv2.putText(info_img, f"Reward: {episode_reward:.1f}",
-                       (10, 75), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 1)
+            cv2.putText(
+                info_img,
+                f"Episode: {episode + 1}/{num_episodes}",
+                (10, 25),
+                cv2.FONT_HERSHEY_SIMPLEX,
+                0.4,
+                (0, 0, 0),
+                1,
+            )
+            cv2.putText(
+                info_img,
+                f"Steps: {steps}",
+                (10, 50),
+                cv2.FONT_HERSHEY_SIMPLEX,
+                0.4,
+                (0, 0, 0),
+                1,
+            )
+            cv2.putText(
+                info_img,
+                f"Reward: {episode_reward:.1f}",
+                (10, 75),
+                cv2.FONT_HERSHEY_SIMPLEX,
+                0.4,
+                (0, 0, 0),
+                1,
+            )
 
             # Combine images
             display_img = np.vstack([img, info_img])
@@ -131,23 +162,23 @@ def demo_agent(model_path: str, maze_size: int = 10, render_size: int = 84,
             # Show/save image
             if is_headless:
                 # Save current frame in headless mode
-                cv2.imwrite(f'{save_dir}/demo_current.png', display_img)
+                cv2.imwrite(f"{save_dir}/demo_current.png", display_img)
             else:
                 try:
-                    cv2.imshow('Trained Agent Demo', display_img)
+                    cv2.imshow("Trained Agent Demo", display_img)
                     key = cv2.waitKey(delay)
 
                     # Handle key presses
-                    if key == ord('q'):
+                    if key == ord("q"):
                         print("\nQuitting demo...")
                         env.close()
                         return
-                    elif key == ord('n'):
+                    elif key == ord("n"):
                         print("Skipping to next episode...")
                         break
                 except (cv2.error, AttributeError):
                     # Fallback to file saving
-                    cv2.imwrite(f'{save_dir}/demo_current.png', display_img)
+                    cv2.imwrite(f"{save_dir}/demo_current.png", display_img)
                     time.sleep(delay / 1000.0)
 
             # Select action (no exploration)
@@ -177,7 +208,7 @@ def demo_agent(model_path: str, maze_size: int = 10, render_size: int = 84,
         # Save recorded episode
         if recorder:
             recorder.finalize(success, steps, episode_reward, episode + 1)
-            recorder.save(f'{save_dir}/demo_episode_{episode}.pkl')
+            recorder.save(f"{save_dir}/demo_episode_{episode}.pkl")
             print(f"  Recorded episode saved to {save_dir}/demo_episode_{episode}.pkl")
 
         if env._is_goal_reached():
@@ -189,18 +220,22 @@ def demo_agent(model_path: str, maze_size: int = 10, render_size: int = 84,
             print(f"  Total reward: {episode_reward:.2f}")
 
         # Store episode data for visualization
-        episode_data.append({
-            'episode': episode + 1,
-            'steps': steps,
-            'reward': episode_reward,
-            'success': success
-        })
+        episode_data.append(
+            {
+                "episode": episode + 1,
+                "steps": steps,
+                "reward": episode_reward,
+                "success": success,
+            }
+        )
 
     # Summary statistics
     print("\n" + "=" * 50)
     print("DEMO SUMMARY")
     print("=" * 50)
-    print(f"Success Rate: {successes}/{num_episodes} ({successes/num_episodes*100:.1f}%)")
+    print(
+        f"Success Rate: {successes}/{num_episodes} ({successes/num_episodes*100:.1f}%)"
+    )
     print(f"Average Steps: {np.mean(total_steps):.1f}")
     print(f"Average Reward: {np.mean(total_rewards):.2f}")
     print(f"Min Steps: {np.min(total_steps)}")
@@ -218,42 +253,52 @@ def demo_agent(model_path: str, maze_size: int = 10, render_size: int = 84,
 def create_demo_summary_viz(episode_data, save_dir):
     """Create summary visualization of demo performance."""
     fig, axes = plt.subplots(2, 2, figsize=(12, 10))
-    fig.suptitle('Demo Performance Summary', fontsize=16, fontweight='bold')
+    fig.suptitle("Demo Performance Summary", fontsize=16, fontweight="bold")
 
-    episodes = [d['episode'] for d in episode_data]
-    steps = [d['steps'] for d in episode_data]
-    rewards = [d['reward'] for d in episode_data]
-    successes = [d['success'] for d in episode_data]
+    episodes = [d["episode"] for d in episode_data]
+    steps = [d["steps"] for d in episode_data]
+    rewards = [d["reward"] for d in episode_data]
+    successes = [d["success"] for d in episode_data]
 
     # Plot 1: Steps per episode
-    axes[0, 0].bar(episodes, steps, color=['green' if s else 'red' for s in successes])
-    axes[0, 0].set_xlabel('Episode')
-    axes[0, 0].set_ylabel('Steps')
-    axes[0, 0].set_title('Steps to Complete Each Episode')
+    axes[0, 0].bar(episodes, steps, color=["green" if s else "red" for s in successes])
+    axes[0, 0].set_xlabel("Episode")
+    axes[0, 0].set_ylabel("Steps")
+    axes[0, 0].set_title("Steps to Complete Each Episode")
     axes[0, 0].grid(True, alpha=0.3)
-    axes[0, 0].axhline(y=np.mean(steps), color='blue', linestyle='--',
-                       label=f'Average: {np.mean(steps):.1f}')
+    axes[0, 0].axhline(
+        y=np.mean(steps),
+        color="blue",
+        linestyle="--",
+        label=f"Average: {np.mean(steps):.1f}",
+    )
     axes[0, 0].legend()
 
     # Plot 2: Rewards per episode
-    axes[0, 1].plot(episodes, rewards, marker='o', linewidth=2, markersize=8)
-    axes[0, 1].set_xlabel('Episode')
-    axes[0, 1].set_ylabel('Total Reward')
-    axes[0, 1].set_title('Reward per Episode')
+    axes[0, 1].plot(episodes, rewards, marker="o", linewidth=2, markersize=8)
+    axes[0, 1].set_xlabel("Episode")
+    axes[0, 1].set_ylabel("Total Reward")
+    axes[0, 1].set_title("Reward per Episode")
     axes[0, 1].grid(True, alpha=0.3)
-    axes[0, 1].axhline(y=np.mean(rewards), color='red', linestyle='--',
-                       label=f'Average: {np.mean(rewards):.2f}')
+    axes[0, 1].axhline(
+        y=np.mean(rewards),
+        color="red",
+        linestyle="--",
+        label=f"Average: {np.mean(rewards):.2f}",
+    )
     axes[0, 1].legend()
 
     # Plot 3: Success/Failure
     success_count = sum(successes)
     failure_count = len(successes) - success_count
-    axes[1, 0].pie([success_count, failure_count],
-                   labels=['Success', 'Failure'],
-                   colors=['green', 'red'],
-                   autopct='%1.1f%%',
-                   startangle=90)
-    axes[1, 0].set_title(f'Success Rate: {success_count}/{len(successes)}')
+    axes[1, 0].pie(
+        [success_count, failure_count],
+        labels=["Success", "Failure"],
+        colors=["green", "red"],
+        autopct="%1.1f%%",
+        startangle=90,
+    )
+    axes[1, 0].set_title(f"Success Rate: {success_count}/{len(successes)}")
 
     # Plot 4: Statistics summary
     stats_text = f"""
@@ -273,33 +318,58 @@ def create_demo_summary_viz(episode_data, save_dir):
       Min: {np.min(rewards):.2f}
       Max: {np.max(rewards):.2f}
     """
-    axes[1, 1].text(0.1, 0.5, stats_text, fontsize=10, family='monospace',
-                    verticalalignment='center',
-                    bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.5))
-    axes[1, 1].axis('off')
+    axes[1, 1].text(
+        0.1,
+        0.5,
+        stats_text,
+        fontsize=10,
+        family="monospace",
+        verticalalignment="center",
+        bbox=dict(boxstyle="round", facecolor="wheat", alpha=0.5),
+    )
+    axes[1, 1].axis("off")
 
     plt.tight_layout()
-    plt.savefig(f'{save_dir}/demo_summary.png', dpi=150, bbox_inches='tight')
+    plt.savefig(f"{save_dir}/demo_summary.png", dpi=150, bbox_inches="tight")
     plt.close()
 
 
 def main():
     """Main demo function."""
-    parser = argparse.ArgumentParser(description='Demo trained DQN agent on maze')
-    parser.add_argument('--model', type=str, default='./models/dqn_final.pth',
-                       help='Path to trained model (default: ./models/dqn_final.pth)')
-    parser.add_argument('--maze-size', type=int, default=10,
-                       help='Size of the maze (default: 10)')
-    parser.add_argument('--render-size', type=int, default=84,
-                       help='Size of rendered images - must match training size (default: 84)')
-    parser.add_argument('--episodes', type=int, default=5,
-                       help='Number of episodes to run (default: 5)')
-    parser.add_argument('--delay', type=int, default=200,
-                       help='Delay between steps in ms (default: 200)')
-    parser.add_argument('--save-dir', type=str, default='demo_outputs',
-                       help='Directory to save demo outputs (default: demo_outputs)')
-    parser.add_argument('--record', action='store_true',
-                       help='Record episodes for later replay')
+    parser = argparse.ArgumentParser(description="Demo trained DQN agent on maze")
+    parser.add_argument(
+        "--model",
+        type=str,
+        default="./models/dqn_final.pth",
+        help="Path to trained model (default: ./models/dqn_final.pth)",
+    )
+    parser.add_argument(
+        "--maze-size", type=int, default=10, help="Size of the maze (default: 10)"
+    )
+    parser.add_argument(
+        "--render-size",
+        type=int,
+        default=84,
+        help="Size of rendered images - must match training size (default: 84)",
+    )
+    parser.add_argument(
+        "--episodes", type=int, default=5, help="Number of episodes to run (default: 5)"
+    )
+    parser.add_argument(
+        "--delay",
+        type=int,
+        default=200,
+        help="Delay between steps in ms (default: 200)",
+    )
+    parser.add_argument(
+        "--save-dir",
+        type=str,
+        default="demo_outputs",
+        help="Directory to save demo outputs (default: demo_outputs)",
+    )
+    parser.add_argument(
+        "--record", action="store_true", help="Record episodes for later replay"
+    )
 
     args = parser.parse_args()
 
@@ -310,9 +380,9 @@ def main():
         num_episodes=args.episodes,
         delay=args.delay,
         save_dir=args.save_dir,
-        record_episodes=args.record
+        record_episodes=args.record,
     )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

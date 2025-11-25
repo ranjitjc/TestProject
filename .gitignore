@@ -50,3 +50,5 @@ frames/
 Thumbs.db
 frames*/
 demo_outputs/
+
+.venv/

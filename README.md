@@ -128,6 +128,9 @@ python main.py train --maze-size 15 --episodes 2000
 # With visual rendering and live visualization
 python main.py train --render --live-viz --episodes 1000
 
+#custom
+python3 main.py train --maze-size 6 --record-freq 5 --episodes 1000 --render --live-viz
+
 # All training options
 python main.py train --help
 ```
@@ -163,6 +166,9 @@ python demo.py --model ./models/dqn_final.pth --save-dir my_demo --record
 
 # Using main.py
 python main.py demo --model ./models/dqn_final.pth
+
+#custom
+python3 demo.py --model ./models/dqn_e10_final.pth --maze-size 6  --episode 100 --record
 
 # All demo options
 python demo.py --help
